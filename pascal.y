@@ -71,5 +71,6 @@ int main()
 
 int yyerror(const char * s)
 {
+	printf("Parse error");
   return -1;
 }
