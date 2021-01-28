@@ -1,9 +1,8 @@
 %{
 		#include <stdio.h>
 
-    int yylex();
+    extern int yylex();
     int yyerror(const char *s);
-    int yyparse();
 %}
 
 %define api.prefix {pascal}
