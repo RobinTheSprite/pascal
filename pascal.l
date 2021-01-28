@@ -9,11 +9,21 @@
 %}
 
 %%
-program                               {return (PROGRAM);}
-begin                                 {return (BEGIN_BLOCK);}
-end                                   {return (END_BLOCK);}
-([a-zA-Z]|_)[a-zA-Z0-9]{1,127}        {return (IDENTIFIER);}
-'.*'                                  {return (STRING);}
-[ \n\t.;]                             {}
+program                               {return PROGRAM;}
+begin                                 {return BEGIN_BLOCK;}
+end                                   {return END_BLOCK;}
+var                                   {return VAR;}
+[a-zA-Z]+                             {return IDENTIFIER;}
+[0-9]+                                {return NUM;}
+'.*'                                  {return STRING;}
+"."                                   {return PERIOD;}
+":="                                  {return ASSIGN;}
+";"                                   {return SEMICOLON;}
+"("                                   {return LEFT_PAREN;}
+")"                                   {return RIGHT_PAREN;}
+","                                   {return COMMA;}
+">"                                   {return GREATER_THAN;}
+"<"                                   {return LESS_THAN;}
+[ \t\n]                               {}
 .                                     {printf("Unknown character %c\n", *yytext);}
 %%
