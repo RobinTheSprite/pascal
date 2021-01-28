@@ -2,8 +2,10 @@
 %option prefix="pascal"
 
 %{
-		#include <stdio.h>
+    #include <iostream>
     #include "pascal.tab.h"
+
+    char symbols[100][2];
 %}
 
 %%
@@ -22,5 +24,5 @@ var                                   {return VAR;}
 ">"                                   {return GREATER_THAN;}
 "<"                                   {return LESS_THAN;}
 [ \t\n]                               {}
-.                                     {printf("Unknown character %c\n", *yytext);}
+.                                     {std::cout << "Unknown character" << *yytext << std::endl;}
 %%
