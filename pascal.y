@@ -10,9 +10,10 @@
 %union
 {
     int ival;
+    char * sval;
 }
 
-%token IDENTIFIER
+%token <sval> IDENTIFIER
 %token <ival> NUM
 %token VAR
 %token PROGRAM BEGIN_BLOCK END_BLOCK
@@ -54,7 +55,7 @@ variable_declaration: VAR variableid_list
 | variable_declaration SEMICOLON variableid_list
 ;
 
-variableid_list: IDENTIFIER                                       {printf("Variable list\n");}
+variableid_list: IDENTIFIER                                       {printf("Variable=%s\n", $1);}
 | variableid_list COMMA IDENTIFIER
 ;
 
