@@ -15,7 +15,6 @@ end                                   {return END_BLOCK;}
 var                                   {return VAR;}
 [a-zA-Z]+                             {return IDENTIFIER;}
 [0-9]+                                {return NUM;}
-'.*'                                  {return STRING;}
 "."                                   {return PERIOD;}
 ":="                                  {return ASSIGN;}
 ";"                                   {return SEMICOLON;}

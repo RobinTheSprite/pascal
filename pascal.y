@@ -10,12 +10,10 @@
 
 %union
 {
-    char *sval;
     int ival;
 }
 
 %token IDENTIFIER
-%token <sval> STRING
 %token <ival> NUM
 %token VAR
 %token PROGRAM BEGIN_BLOCK END_BLOCK
@@ -92,8 +90,7 @@ multiplicative_expression: unary_expression
 unary_expression: primary_expression
 ;
 
-primary_expression: STRING                                        {printf("String=%s\n", $1);}
-| NUM                                                             {printf("Int\n");}
+primary_expression: NUM                                           {printf("Integer=%d\n", $1);}
 ;
 
 procid: IDENTIFIER                                                {printf("ID\n");}
