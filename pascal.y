@@ -15,7 +15,6 @@
 
 %token IDENTIFIER
 %token <sval> STRING
-%token EOL
 %token PROGRAM BEGIN_BLOCK END_BLOCK
 %token '(' ')' ';' '.'
 
