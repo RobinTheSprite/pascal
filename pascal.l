@@ -4,8 +4,6 @@
 %{
 		#include <stdio.h>
     #include "pascal.tab.h"
-
-    int yylex();
 %}
 
 %%
