@@ -1,14 +1,14 @@
 %{
-	int yylex();
-	int yyerror(const char *s);
-	int yyparse();
+    int yylex();
+    int yyerror(const char *s);
+    int yyparse();
 %}
 
 %define api.prefix {pascal}
 
 %union
 {
-	char *sval;
+    char *sval;
 }
 
 %token IDENTIFIER
@@ -69,5 +69,5 @@ int main()
 
 int yyerror(const char * s)
 {
-	return -1;
+  return -1;
 }
