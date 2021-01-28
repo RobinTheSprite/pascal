@@ -12,7 +12,7 @@ begin                                 {return BEGIN_BLOCK;}
 end                                   {return END_BLOCK;}
 var                                   {return VAR;}
 [a-zA-Z]+                             {return IDENTIFIER;}
-[0-9]+                                {return NUM;}
+[0-9]+                                {pascallval.ival = atoi(yytext); return NUM;}
 "."                                   {return PERIOD;}
 ":="                                  {return ASSIGN;}
 ";"                                   {return SEMICOLON;}
