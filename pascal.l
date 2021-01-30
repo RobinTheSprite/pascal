@@ -29,6 +29,8 @@ var                                   {return VAR;}
 [0-9]+                                {pascallval.ival = atoi(yytext); return NUM;}
 "."                                   {return PERIOD;}
 ":="                                  {return ASSIGN;}
+"*"                                   {return MULT;}
+"/"                                   {return DIV;}
 "+"                                   {return PLUS;}
 "-"                                   {return MINUS;}
 ";"                                   {return SEMICOLON;}

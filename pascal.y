@@ -28,7 +28,7 @@
 %token VAR
 %token PROGRAM BEGIN_BLOCK END_BLOCK
 %token PERIOD SEMICOLON LEFT_PAREN RIGHT_PAREN COMMA
-%token ASSIGN GREATER_THAN LESS_THAN PLUS MINUS
+%token ASSIGN GREATER_THAN LESS_THAN PLUS MINUS MULT DIV
 
 %type <ival> primary_expression unary_expression multiplicative_expression additive_expression expression
 
@@ -98,7 +98,9 @@ additive_expression: additive_expression PLUS multiplicative_expression         
 | multiplicative_expression                                                     {$$ = $1;}
 ;
 
-multiplicative_expression: unary_expression                                     {$$ = $1;}
+multiplicative_expression: multiplicative_expression MULT unary_expression      {printf("Multiplication\n"); $$ = $1 * $3;}
+| multiplicative_expression DIV unary_expression                                {printf("Division\n"); $$ = $1 / $3;}
+| unary_expression                                                              {$$ = $1;}
 ;
 
 unary_expression: primary_expression                                            {$$ = $1;}
