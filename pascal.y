@@ -29,6 +29,7 @@
 %token PROGRAM BEGIN_BLOCK END_BLOCK
 %token PERIOD SEMICOLON LEFT_PAREN RIGHT_PAREN COMMA
 %token ASSIGN GREATER_THAN LESS_THAN PLUS MINUS MULT DIV
+%token IF THEN
 
 %type <ival> primary_expression unary_expression multiplicative_expression additive_expression expression
 
@@ -78,7 +79,11 @@ statement_list: statement                                                       
 statement: empty                                                                {printf("Empty statement\n");}
 | IDENTIFIER ASSIGN expression                                                  {printf("Assignment statement %s\n", $1); assign($1[0], $3);}
 | BEGIN_BLOCK statement_list END_BLOCK
+| control_flow
 | procid LEFT_PAREN expression_list RIGHT_PAREN                                 {printf("Function with parameters\n");}
+;
+
+control_flow: IF expression THEN statement                                      {printf("If statement\n");}}
 ;
 
 expression_list: expression

@@ -1,6 +1,6 @@
 program Hello;
 var I, J;
 begin
-  I := 9 / 3 + 2 * 5;
-  J := 3 < 5;
+  if 3 < 5 then
+    I := 4;
 end.
