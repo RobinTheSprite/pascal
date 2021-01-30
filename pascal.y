@@ -29,7 +29,9 @@
 %token PROGRAM BEGIN_BLOCK END_BLOCK
 %token PERIOD SEMICOLON LEFT_PAREN RIGHT_PAREN COMMA
 %token ASSIGN GREATER_THAN LESS_THAN PLUS MINUS MULT DIV
-%token IF THEN
+%token IF THEN ELSE
+
+%right THEN ELSE
 
 %type <ival> primary_expression unary_expression multiplicative_expression additive_expression expression
 
@@ -83,7 +85,8 @@ statement: empty                                                                
 | procid LEFT_PAREN expression_list RIGHT_PAREN                                 {printf("Function with parameters\n");}
 ;
 
-control_flow: IF expression THEN statement                                      {printf("If statement\n");}}
+control_flow: IF expression THEN statement                                      {printf("If statement\n");}
+| IF expression THEN statement ELSE statement                                   {printf("If-else statement\n");}
 ;
 
 expression_list: expression
