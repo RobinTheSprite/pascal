@@ -85,12 +85,9 @@ expression_list: expression
 | expression_list COMMA expression                                              {printf("Expression list\n");}
 ;
 
-expression: expression relational_op additive_expression                        {printf("Expression=%d\n", $3); $$ = $3;}
+expression: expression GREATER_THAN additive_expression                         {$$ = $1 > $3; printf("Greater than=%d\n", $$);}
+| expression LESS_THAN additive_expression                                      {$$ = $1 < $3; printf("Less than=%d\n", $$);}
 | additive_expression                                                           {printf("Expression=%d\n", $1); $$ = $1;}
-;
-
-relational_op: GREATER_THAN                                                     {printf("Greater than\n");}
-| LESS_THAN                                                                     {printf("Less than\n");}
 ;
 
 additive_expression: additive_expression PLUS multiplicative_expression         {printf("Addition\n"); $$ = $1 + $3;}
