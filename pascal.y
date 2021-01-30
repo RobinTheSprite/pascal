@@ -3,6 +3,14 @@
 
     extern int yylex();
     int yyerror(const char *s);
+
+    struct Symbol
+    {
+      char name;
+      int value;
+    };
+
+    extern struct Symbol symbols;
 %}
 
 %define api.prefix {pascal}
@@ -19,6 +27,8 @@
 %token PROGRAM BEGIN_BLOCK END_BLOCK
 %token PERIOD SEMICOLON LEFT_PAREN RIGHT_PAREN COMMA
 %token ASSIGN GREATER_THAN LESS_THAN
+
+%type <ival> primary_expression unary_expression multiplicative_expression additive_expression expression
 
 %%
 pascal_program: PROGRAM IDENTIFIER program_heading SEMICOLON block PERIOD {printf("Parse Successful\n");}
@@ -56,7 +66,7 @@ variable_declaration: VAR variableid_list
 ;
 
 variableid_list: IDENTIFIER                                       {printf("Variable=%s\n", $1);}
-| variableid_list COMMA IDENTIFIER
+| variableid_list COMMA IDENTIFIER                                {printf("Variable=%s\n", $3);}
 ;
 
 statement_list: statement                                         {printf("Statement\n");}
@@ -64,7 +74,8 @@ statement_list: statement                                         {printf("State
 ;
 
 statement: empty                                                  {printf("Empty statement\n");}
-| IDENTIFIER ASSIGN expression                                    {printf("Assignment statement\n");}
+| IDENTIFIER ASSIGN expression                                    {printf("Assignment statement %s\n", $1);}
+| BEGIN_BLOCK statement_list END_BLOCK
 | procid                                                          {printf("Zero parameter function\n");}
 | procid LEFT_PAREN expression_list RIGHT_PAREN                   {printf("Function with parameters\n");}
 ;
@@ -73,7 +84,7 @@ expression_list: expression                                       {printf("expre
 | expression_list COMMA expression                                {printf("Expression list\n");}
 ;
 
-expression: expression relational_op additive_expression
+expression: expression relational_op additive_expression          {$$ = $3;}
 | additive_expression
 ;
 
@@ -81,16 +92,16 @@ relational_op: GREATER_THAN                                       {printf("Great
 | LESS_THAN                                                       {printf("Less than\n");}
 ;
 
-additive_expression: multiplicative_expression
+additive_expression: multiplicative_expression                    {$$ = $1;}
 ;
 
-multiplicative_expression: unary_expression
+multiplicative_expression: unary_expression                       {$$ = $1;}
 ;
 
-unary_expression: primary_expression
+unary_expression: primary_expression                              {$$ = $1;}
 ;
 
-primary_expression: NUM                                           {printf("Integer=%d\n", $1);}
+primary_expression: NUM                                           {printf("Integer=%d\n", $1); $$ = $1;}
 ;
 
 procid: IDENTIFIER                                                {printf("ID\n");}
