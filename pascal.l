@@ -17,6 +17,7 @@
     struct Symbol symbols[symbolLength];
 
     void findSymbol(char * symbol);
+
 %}
 
 %%
@@ -28,6 +29,8 @@ var                                   {return VAR;}
 [0-9]+                                {pascallval.ival = atoi(yytext); return NUM;}
 "."                                   {return PERIOD;}
 ":="                                  {return ASSIGN;}
+"+"                                   {return PLUS;}
+"-"                                   {return MINUS;}
 ";"                                   {return SEMICOLON;}
 "("                                   {return LEFT_PAREN;}
 ")"                                   {return RIGHT_PAREN;}
@@ -40,7 +43,7 @@ var                                   {return VAR;}
 
 void findSymbol(char * symbol)
 {
-  if (symbol[1] == 0)
+  if (symbol[1] != 0)
   {
     return;
   }
