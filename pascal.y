@@ -12,6 +12,7 @@
 
     #define symbolLength 100
     extern struct Symbol symbols[100];
+    int * getValue(char * symbol);
     void assign(char, int value);
 %}
 
@@ -34,6 +35,7 @@
 %right THEN ELSE
 
 %type <ival> primary_expression unary_expression multiplicative_expression additive_expression expression
+%type <sval> variable
 
 %%
 pascal_program: PROGRAM IDENTIFIER program_heading SEMICOLON block PERIOD       {printf("Parse Successful\n");}
@@ -79,7 +81,7 @@ statement_list: statement                                                       
 ;
 
 statement: empty                                                                {printf("Empty statement\n");}
-| IDENTIFIER ASSIGN expression                                                  {printf("Assignment statement %c=%d\n", $1[0], $3); assign($1[0], $3);}
+| variable ASSIGN expression                                                    {printf("Assignment statement %c=%d\n", $1[0], $3); assign($1[0], $3);}
 | BEGIN_BLOCK statement_list END_BLOCK
 | control_flow
 | procid LEFT_PAREN expression_list RIGHT_PAREN                                 {printf("Function with parameters\n");}
@@ -88,6 +90,9 @@ statement: empty                                                                
 control_flow: IF expression THEN statement                                      {printf("If statement\n");}
 | IF expression THEN statement ELSE statement                                   {printf("If-else statement\n");}
 | WHILE expression DO statement                                                 {printf("While statement\n");}
+;
+
+variable: IDENTIFIER
 ;
 
 expression_list: expression
@@ -112,7 +117,19 @@ multiplicative_expression: multiplicative_expression MULT unary_expression      
 unary_expression: primary_expression                                            {$$ = $1;}
 ;
 
-primary_expression: NUM                                                         {printf("Integer=%d\n", $1); $$ = $1;}
+primary_expression: variable                                                    {
+                                                                                  int * result = getValue($1);
+                                                                                  if (result[0] == 0)
+                                                                                  {
+                                                                                    $$ = result[1];
+                                                                                  }
+                                                                                  else
+                                                                                  {
+                                                                                    $$ = 0;
+                                                                                  }
+                                                                                  printf("Variable %c=%d\n", $1[0], result[1]);
+                                                                                }
+| NUM                                                                           {printf("Integer=%d\n", $1); $$ = $1;}
 ;
 
 procid: IDENTIFIER                                                              {printf("ID\n");}
@@ -131,6 +148,24 @@ void assign(char symbol, int value)
       symbols[i].value = value;
     }
   }
+}
+
+int * getValue(char * symbol)
+{
+  static int result[2];
+  for (int i = 0; i < symbolLength; ++i)
+  {
+    if (symbols[i].name == symbol[0])
+    {
+      result[0] = 0;
+      result[1] = symbols[i].value;
+      return result;
+    }
+  }
+
+  result[0] = -1;
+  result[1] = 0;
+  return result;
 }
 
 int main()

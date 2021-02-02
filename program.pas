@@ -4,5 +4,5 @@ begin
   I := 2;
   J := 6;
   while 3 < 5 do
-    I := 1 + 1
+    I := I + I
 end.
