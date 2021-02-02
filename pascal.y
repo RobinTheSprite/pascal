@@ -1,5 +1,6 @@
 %{
 		#include <stdio.h>
+    #include <string.h>
 
     extern int yylex();
     int yyerror(const char *s);
@@ -35,7 +36,7 @@
 %right THEN ELSE
 
 %type <ival> primary_expression multiplicative_expression additive_expression expression
-%type <sval> variable
+%type <sval> variable procid
 
 %%
 pascal_program: PROGRAM IDENTIFIER program_heading SEMICOLON block PERIOD       {printf("Parse Successful\n");}
@@ -84,7 +85,14 @@ statement: empty                                                                
 | variable ASSIGN expression                                                    {printf("Assignment statement %c=%d\n", $1[0], $3); assign($1[0], $3);}
 | BEGIN_BLOCK statement_list END_BLOCK
 | control_flow
-| procid LEFT_PAREN expression_list RIGHT_PAREN                                 {printf("Function with parameters\n");}
+| procid LEFT_PAREN expression RIGHT_PAREN                                      {
+                                                                                  printf("Function with parameters %s\n", $1);
+                                                                                  // I guess negative characters are a thing
+                                                                                  if (strcmp("writeln", $1) == -'(')
+                                                                                  {
+                                                                                    printf("%d\n", $3);
+                                                                                  }
+                                                                                }
 ;
 
 control_flow: IF expression THEN statement                                      {printf("If statement=%d\n", $2);}
@@ -93,10 +101,6 @@ control_flow: IF expression THEN statement                                      
 ;
 
 variable: IDENTIFIER
-;
-
-expression_list: expression
-| expression_list COMMA expression                                              {printf("Expression list\n");}
 ;
 
 expression: expression GREATER_THAN additive_expression                         {$$ = $1 > $3; printf("Greater than=%d\n", $$);}
