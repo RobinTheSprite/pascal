@@ -2,7 +2,7 @@
 %option prefix="pascal"
 
 %{
-		#include <stdio.h>
+    #include <iostream>
     #include "pascal.tab.h"
 
     struct Symbol
@@ -45,7 +45,7 @@ do                                    {return DO;}
 ">"                                   {return GREATER_THAN;}
 "<"                                   {return LESS_THAN;}
 [ \t\n]                               {}
-.                                     {printf("Unknown character %c\n", *yytext);}
+.                                     {std::cout << "Unknown character" << *yytext << std::endl;}
 %%
 
 void findSymbol(char * symbol)
