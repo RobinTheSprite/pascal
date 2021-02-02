@@ -51,22 +51,10 @@ identifier_list: IDENTIFIER                                                     
 ;
 
 block: block1
+| variable_declaration SEMICOLON block1
 ;
 
-block1: block2
-;
-
-block2: block3
-| variable_declaration SEMICOLON block4
-;
-
-block3: block4
-;
-
-block4: block5
-;
-
-block5: BEGIN_BLOCK statement_list END_BLOCK                                    {printf("Begin/end block\n");}
+block1: BEGIN_BLOCK statement_list END_BLOCK                                    {printf("Begin/end block\n");}
 ;
 
 variable_declaration: VAR variableid_list
@@ -81,7 +69,7 @@ statement_list: statement                                                       
 | statement_list SEMICOLON statement                                            {printf("Statement list\n");}
 ;
 
-statement: empty                                                                {printf("Empty statement\n");}
+statement:                                                                      {printf("Empty statement\n");}
 | variable ASSIGN expression                                                    {
                                                                                   printf("Assignment statement %c=%d\n", $1[0], $3);
                                                                                   assign($1[0], $3);
@@ -136,10 +124,7 @@ primary_expression: variable                                                    
 | NUM                                                                           {printf("Integer=%d\n", $1); $$ = $1;}
 ;
 
-procid: IDENTIFIER                                                              {printf("ID\n");}
-;
-
-empty:
+procid: IDENTIFIER
 ;
 %%
 
