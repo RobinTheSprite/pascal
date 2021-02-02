@@ -1,8 +1,8 @@
 program Hello;
 var I, J;
 begin
-  if 3 < 5 then
-    I := 4
-  else
-    J := 9;
+  I := 2;
+  J := 6;
+  while 3 < 5 do
+    I := 1 + 1
 end.

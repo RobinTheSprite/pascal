@@ -29,7 +29,7 @@
 %token PROGRAM BEGIN_BLOCK END_BLOCK
 %token PERIOD SEMICOLON LEFT_PAREN RIGHT_PAREN COMMA
 %token ASSIGN GREATER_THAN LESS_THAN PLUS MINUS MULT DIV
-%token IF THEN ELSE
+%token IF THEN ELSE WHILE DO
 
 %right THEN ELSE
 
@@ -79,7 +79,7 @@ statement_list: statement                                                       
 ;
 
 statement: empty                                                                {printf("Empty statement\n");}
-| IDENTIFIER ASSIGN expression                                                  {printf("Assignment statement %s\n", $1); assign($1[0], $3);}
+| IDENTIFIER ASSIGN expression                                                  {printf("Assignment statement %c=%d\n", $1[0], $3); assign($1[0], $3);}
 | BEGIN_BLOCK statement_list END_BLOCK
 | control_flow
 | procid LEFT_PAREN expression_list RIGHT_PAREN                                 {printf("Function with parameters\n");}
@@ -87,6 +87,7 @@ statement: empty                                                                
 
 control_flow: IF expression THEN statement                                      {printf("If statement\n");}
 | IF expression THEN statement ELSE statement                                   {printf("If-else statement\n");}
+| WHILE expression DO statement                                                 {printf("While statement\n");}
 ;
 
 expression_list: expression

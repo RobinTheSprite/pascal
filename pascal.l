@@ -28,6 +28,8 @@ var                                   {return VAR;}
 if                                    {return IF;}
 then                                  {return THEN;}
 else                                  {return ELSE;}
+while                                 {return WHILE;}
+do                                    {return DO;}
 [a-zA-Z]+                             {findSymbol(yytext); pascallval.sval = yytext; return IDENTIFIER;}
 [0-9]+                                {pascallval.ival = atoi(yytext); return NUM;}
 "."                                   {return PERIOD;}
