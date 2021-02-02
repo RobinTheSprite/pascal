@@ -34,7 +34,7 @@
 
 %right THEN ELSE
 
-%type <ival> primary_expression unary_expression multiplicative_expression additive_expression expression
+%type <ival> primary_expression multiplicative_expression additive_expression expression
 %type <sval> variable
 
 %%
@@ -109,12 +109,9 @@ additive_expression: additive_expression PLUS multiplicative_expression         
 | multiplicative_expression                                                     {$$ = $1;}
 ;
 
-multiplicative_expression: multiplicative_expression MULT unary_expression      {printf("Multiplication\n"); $$ = $1 * $3;}
-| multiplicative_expression DIV unary_expression                                {printf("Division\n"); $$ = $1 / $3;}
-| unary_expression                                                              {$$ = $1;}
-;
-
-unary_expression: primary_expression                                            {$$ = $1;}
+multiplicative_expression: multiplicative_expression MULT primary_expression      {printf("Multiplication\n"); $$ = $1 * $3;}
+| multiplicative_expression DIV primary_expression                                {printf("Division\n"); $$ = $1 / $3;}
+| primary_expression                                                              {$$ = $1;}
 ;
 
 primary_expression: variable                                                    {
