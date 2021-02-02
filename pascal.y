@@ -82,11 +82,14 @@ statement_list: statement                                                       
 ;
 
 statement: empty                                                                {printf("Empty statement\n");}
-| variable ASSIGN expression                                                    {printf("Assignment statement %c=%d\n", $1[0], $3); assign($1[0], $3);}
+| variable ASSIGN expression                                                    {
+                                                                                  printf("Assignment statement %c=%d\n", $1[0], $3);
+                                                                                  assign($1[0], $3);
+                                                                                }
 | BEGIN_BLOCK statement_list END_BLOCK
 | control_flow
 | procid LEFT_PAREN expression RIGHT_PAREN                                      {
-                                                                                  printf("Function with parameters %s\n", $1);
+                                                                                  printf("Function with parameters=%s\n", $1);
                                                                                   // I guess negative characters are a thing
                                                                                   if (strcmp("writeln", $1) == -'(')
                                                                                   {
