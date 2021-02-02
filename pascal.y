@@ -87,9 +87,9 @@ statement: empty                                                                
 | procid LEFT_PAREN expression_list RIGHT_PAREN                                 {printf("Function with parameters\n");}
 ;
 
-control_flow: IF expression THEN statement                                      {printf("If statement\n");}
-| IF expression THEN statement ELSE statement                                   {printf("If-else statement\n");}
-| WHILE expression DO statement                                                 {printf("While statement\n");}
+control_flow: IF expression THEN statement                                      {printf("If statement=%d\n", $2);}
+| IF expression THEN statement ELSE statement                                   {printf("If-else statement=%d\n", $2);}
+| WHILE expression DO statement                                                 {printf("While statement=%d\n", $2);}
 ;
 
 variable: IDENTIFIER
