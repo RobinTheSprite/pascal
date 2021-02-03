@@ -27,7 +27,7 @@
     void freeAST(struct AST * expr);
     struct AST * makePrimary(char type, int left);
     struct AST * makeAST(char type, struct AST * left, struct AST * right);
-    int evalAST(struct AST * expr);
+    int eval(struct AST * expr);
 %}
 
 %define api.prefix {pascal}
@@ -77,7 +77,7 @@ statement_list: statement
 
 statement:                                                                      {printf("Empty statement\n");}
 | variable ASSIGN expression                                                    {
-                                                                                  int result = evalAST($3);
+                                                                                  int result = eval($3);
                                                                                   printf("Assignment statement %c=%d\n", $1[0], result);
                                                                                   assign($1[0], result);
                                                                                   freeAST($3);
@@ -89,16 +89,16 @@ statement:                                                                      
                                                                                   // I guess negative characters are a thing
                                                                                   if (strcmp("writeln", $1) == -'(')
                                                                                   {
-                                                                                    printf("%d\n", evalAST($3));
+                                                                                    printf("%d\n", eval($3));
                                                                                   }
 
                                                                                   freeAST($3);
                                                                                 }
 ;
 
-control_flow: IF expression THEN statement                                      {printf("If statement=%d\n", evalAST($2)); freeAST($2);}
-| IF expression THEN statement ELSE statement                                   {printf("If-else statement=%d\n", evalAST($2)); freeAST($2);}
-| WHILE expression DO statement                                                 {printf("While statement=%d\n", evalAST($2)); freeAST($2);}
+control_flow: IF expression THEN statement                                      {printf("If statement=%d\n", eval($2)); freeAST($2);}
+| IF expression THEN statement ELSE statement                                   {printf("If-else statement=%d\n", eval($2)); freeAST($2);}
+| WHILE expression DO statement                                                 {printf("While statement=%d\n", eval($2)); freeAST($2);}
 ;
 
 variable: IDENTIFIER                                                            {printf("Variable=%c\n", $1[0]); $$ = $1;}
@@ -226,7 +226,7 @@ struct AST * makeAST(char type, struct AST * left, struct AST * right)
   return expr;
 }
 
-int evalAST(struct AST * expr)
+int eval(struct AST * expr)
 {
   switch (expr->type)
   {
@@ -234,17 +234,17 @@ int evalAST(struct AST * expr)
     break;
     case 'v': return getValue(expr->value)[1];
     break;
-    case '>': return evalAST(expr->left) > evalAST(expr->right);
+    case '>': return eval(expr->left) > eval(expr->right);
     break;
-    case '<': return evalAST(expr->left) > evalAST(expr->right);
+    case '<': return eval(expr->left) > eval(expr->right);
     break;
-    case '+': return evalAST(expr->left) + evalAST(expr->right);
+    case '+': return eval(expr->left) + eval(expr->right);
     break;
-    case '-': return evalAST(expr->left) - evalAST(expr->right);
+    case '-': return eval(expr->left) - eval(expr->right);
     break;
-    case '*': return evalAST(expr->left) * evalAST(expr->right);
+    case '*': return eval(expr->left) * eval(expr->right);
     break;
-    case '/': return evalAST(expr->left) / evalAST(expr->right);
+    case '/': return eval(expr->left) / eval(expr->right);
   }
 }
 
