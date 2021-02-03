@@ -77,12 +77,12 @@ variable_declaration: VAR variableid_list COLON INTEGER
 | variable_declaration SEMICOLON variableid_list COLON INTEGER
 ;
 
-variableid_list: IDENTIFIER                                                     {printf("Variable=%s\n", $1);}
-| variableid_list COMMA IDENTIFIER                                              {printf("Variable=%s\n", $3);}
+variableid_list: IDENTIFIER                                                     {printf("Variable declaration=%s\n", $1);}
+| variableid_list COMMA IDENTIFIER                                              {printf("Variable declaration=%s\n", $3);}
 ;
 
-statement_list: statement                                                       {printf("Statement\n");}
-| statement_list SEMICOLON statement                                            {printf("Statement list\n");}
+statement_list: statement
+| statement_list SEMICOLON statement
 ;
 
 statement:                                                                      {printf("Empty statement\n");}
@@ -123,7 +123,6 @@ expression: expression GREATER_THAN additive_expression                         
                                                                                   printf("Less than\n");
                                                                                 }
 | additive_expression                                                           {
-                                                                                  printf("Expression\n");
                                                                                   $$ = $1;
                                                                                 }
 ;
