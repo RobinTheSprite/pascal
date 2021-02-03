@@ -214,13 +214,11 @@ void freeExpression(struct Expression * expr)
   }
 
   free(expr);
-  printf("Free\n");
 }
 
 struct Expression * makePrimary(char type, int left)
 {
   struct Expression * expr = malloc(sizeof(struct Expression));
-  printf("Malloc\n");
   expr->type = type;
   expr->value = left;
   expr->left = NULL;
@@ -232,7 +230,6 @@ struct Expression * makePrimary(char type, int left)
 struct Expression * makeExpression(char type, struct Expression * left, struct Expression * right)
 {
   struct Expression * expr = malloc(sizeof(struct Expression));
-  printf("Malloc\n");
   expr->type = type;
   expr->left = left;
   expr->right = right;
