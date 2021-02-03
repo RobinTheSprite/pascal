@@ -115,11 +115,11 @@ variable: IDENTIFIER                                                            
 ;
 
 expression: expression GREATER_THAN additive_expression                         {
-                                                                                  $$ = makeExpression('>', $3, $1);
+                                                                                  $$ = makeExpression('>', $1, $3);
                                                                                   printf("Greater than\n");
                                                                                 }
 | expression LESS_THAN additive_expression                                      {
-                                                                                  $$ = makeExpression('<', $3, $1);
+                                                                                  $$ = makeExpression('<', $1, $3);
                                                                                   printf("Less than\n");
                                                                                 }
 | additive_expression                                                           {
@@ -130,11 +130,11 @@ expression: expression GREATER_THAN additive_expression                         
 
 additive_expression: additive_expression PLUS multiplicative_expression         {
                                                                                   printf("Addition\n");
-                                                                                  $$ = makeExpression('+', $3, $1);
+                                                                                  $$ = makeExpression('+', $1, $3);
                                                                                 }
 | additive_expression MINUS multiplicative_expression                           {
                                                                                   printf("Subtraction\n");
-                                                                                  $$ = makeExpression('-', $3, $1);
+                                                                                  $$ = makeExpression('-', $1, $3);
                                                                                 }
 | multiplicative_expression                                                     {$$ = $1;}
 ;
@@ -142,11 +142,11 @@ additive_expression: additive_expression PLUS multiplicative_expression         
 multiplicative_expression: multiplicative_expression MULT primary_expression      {
                                                                                     printf("Multiplication\n");
                                                                                     struct Expression expr;
-                                                                                    $$ = makeExpression('*', $3, $1);
+                                                                                    $$ = makeExpression('*', $1, $3);
                                                                                   }
 | multiplicative_expression DIV primary_expression                                {
                                                                                     printf("Division\n");
-                                                                                    $$ = makeExpression('/', $3, $1);
+                                                                                    $$ = makeExpression('/', $1, $3);
                                                                                   }
 | primary_expression                                                              {$$ = $1;}
 ;
