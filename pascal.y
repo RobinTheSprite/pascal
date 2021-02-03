@@ -27,9 +27,9 @@
 
 %token <sval> IDENTIFIER
 %token <ival> NUM
-%token VAR
+%token VAR INTEGER
 %token PROGRAM BEGIN_BLOCK END_BLOCK
-%token PERIOD SEMICOLON LEFT_PAREN RIGHT_PAREN COMMA
+%token PERIOD SEMICOLON COLON LEFT_PAREN RIGHT_PAREN COMMA
 %token ASSIGN GREATER_THAN LESS_THAN PLUS MINUS MULT DIV
 %token IF THEN ELSE WHILE DO
 
@@ -57,8 +57,8 @@ block: block1
 block1: BEGIN_BLOCK statement_list END_BLOCK                                    {printf("Begin/end block\n");}
 ;
 
-variable_declaration: VAR variableid_list
-| variable_declaration SEMICOLON variableid_list
+variable_declaration: VAR variableid_list COLON INTEGER
+| variable_declaration SEMICOLON variableid_list COLON INTEGER
 ;
 
 variableid_list: IDENTIFIER                                                     {printf("Variable=%s\n", $1);}
@@ -91,7 +91,7 @@ control_flow: IF expression THEN statement                                      
 | WHILE expression DO statement                                                 {printf("While statement=%d\n", $2);}
 ;
 
-variable: IDENTIFIER
+variable: IDENTIFIER                                                            {printf("Variable=%c\n", $1[0]); $$ = $1;}
 ;
 
 expression: expression GREATER_THAN additive_expression                         {$$ = $1 > $3; printf("Greater than=%d\n", $$);}
@@ -119,7 +119,6 @@ primary_expression: variable                                                    
                                                                                   {
                                                                                     $$ = 0;
                                                                                   }
-                                                                                  printf("Variable %c=%d\n", $1[0], result[1]);
                                                                                 }
 | NUM                                                                           {printf("Integer=%d\n", $1); $$ = $1;}
 ;

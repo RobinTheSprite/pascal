@@ -24,6 +24,7 @@ program                               {return PROGRAM;}
 begin                                 {return BEGIN_BLOCK;}
 end                                   {return END_BLOCK;}
 var                                   {return VAR;}
+integer                               {return INTEGER;}
 if                                    {return IF;}
 then                                  {return THEN;}
 else                                  {return ELSE;}
@@ -38,13 +39,14 @@ do                                    {return DO;}
 "+"                                   {return PLUS;}
 "-"                                   {return MINUS;}
 ";"                                   {return SEMICOLON;}
+":"                                   {return COLON;}
 "("                                   {return LEFT_PAREN;}
 ")"                                   {return RIGHT_PAREN;}
 ","                                   {return COMMA;}
 ">"                                   {return GREATER_THAN;}
 "<"                                   {return LESS_THAN;}
 [ \t\n]                               {}
-.                                     {printf("Uknown character %s", yytext);}
+.                                     {printf("Uknown character %s\n", yytext);}
 %%
 
 void findSymbol(char * symbol)
