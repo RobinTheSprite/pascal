@@ -39,15 +39,7 @@
 %type <sval> variable procid
 
 %%
-pascal_program: PROGRAM IDENTIFIER program_heading SEMICOLON block PERIOD       {printf("Parse Successful\n");}
-;
-
-program_heading:
-| LEFT_PAREN identifier_list RIGHT_PAREN
-;
-
-identifier_list: IDENTIFIER                                                     {printf("Identifier list\n");}
-| identifier_list COMMA IDENTIFIER                                              {printf("Identifier list\n");}
+pascal_program: PROGRAM IDENTIFIER SEMICOLON block PERIOD       {printf("Parse Successful\n");}
 ;
 
 block: block1
