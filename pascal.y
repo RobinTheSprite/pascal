@@ -13,20 +13,10 @@
 
     struct AST
     {
-      // Interpretable things:
-      // - Assignment
-      // - If-then
-      // - If-then-else
-      // - While
-      // - function (print)
-    };
-
-    struct Expression
-    {
       char type;
       int value;
-      struct Expression * left;
-      struct Expression * right;
+      struct AST * left;
+      struct AST * right;
     };
 
     #define symbolLength 100
@@ -34,10 +24,10 @@
     int * getValue(char symbol);
     void assign(char, int value);
     void evalStatement();
-    void freeExpression(struct Expression * expr);
-    struct Expression * makePrimary(char type, int left);
-    struct Expression * makeExpression(char type, struct Expression * left, struct Expression * right);
-    int evalExpression(struct Expression * expr);
+    void freeAST(struct AST * expr);
+    struct AST * makePrimary(char type, int left);
+    struct AST * makeAST(char type, struct AST * left, struct AST * right);
+    int evalAST(struct AST * expr);
 %}
 
 %define api.prefix {pascal}
@@ -46,7 +36,7 @@
 {
     int ival;
     char * sval;
-    struct Expression * exprval;
+    struct AST * exprval;
 }
 
 %token <sval> IDENTIFIER
@@ -87,10 +77,10 @@ statement_list: statement
 
 statement:                                                                      {printf("Empty statement\n");}
 | variable ASSIGN expression                                                    {
-                                                                                  int result = evalExpression($3);
+                                                                                  int result = evalAST($3);
                                                                                   printf("Assignment statement %c=%d\n", $1[0], result);
                                                                                   assign($1[0], result);
-                                                                                  freeExpression($3);
+                                                                                  freeAST($3);
                                                                                 }
 | BEGIN_BLOCK statement_list END_BLOCK                                          {printf("Code block\n");}
 | control_flow
@@ -99,27 +89,27 @@ statement:                                                                      
                                                                                   // I guess negative characters are a thing
                                                                                   if (strcmp("writeln", $1) == -'(')
                                                                                   {
-                                                                                    printf("%d\n", evalExpression($3));
+                                                                                    printf("%d\n", evalAST($3));
                                                                                   }
 
-                                                                                  freeExpression($3);
+                                                                                  freeAST($3);
                                                                                 }
 ;
 
-control_flow: IF expression THEN statement                                      {printf("If statement=%d\n", evalExpression($2)); freeExpression($2);}
-| IF expression THEN statement ELSE statement                                   {printf("If-else statement=%d\n", evalExpression($2)); freeExpression($2);}
-| WHILE expression DO statement                                                 {printf("While statement=%d\n", evalExpression($2)); freeExpression($2);}
+control_flow: IF expression THEN statement                                      {printf("If statement=%d\n", evalAST($2)); freeAST($2);}
+| IF expression THEN statement ELSE statement                                   {printf("If-else statement=%d\n", evalAST($2)); freeAST($2);}
+| WHILE expression DO statement                                                 {printf("While statement=%d\n", evalAST($2)); freeAST($2);}
 ;
 
 variable: IDENTIFIER                                                            {printf("Variable=%c\n", $1[0]); $$ = $1;}
 ;
 
 expression: expression GREATER_THAN additive_expression                         {
-                                                                                  $$ = makeExpression('>', $1, $3);
+                                                                                  $$ = makeAST('>', $1, $3);
                                                                                   printf("Greater than\n");
                                                                                 }
 | expression LESS_THAN additive_expression                                      {
-                                                                                  $$ = makeExpression('<', $1, $3);
+                                                                                  $$ = makeAST('<', $1, $3);
                                                                                   printf("Less than\n");
                                                                                 }
 | additive_expression                                                           {
@@ -129,23 +119,23 @@ expression: expression GREATER_THAN additive_expression                         
 
 additive_expression: additive_expression PLUS multiplicative_expression         {
                                                                                   printf("Addition\n");
-                                                                                  $$ = makeExpression('+', $1, $3);
+                                                                                  $$ = makeAST('+', $1, $3);
                                                                                 }
 | additive_expression MINUS multiplicative_expression                           {
                                                                                   printf("Subtraction\n");
-                                                                                  $$ = makeExpression('-', $1, $3);
+                                                                                  $$ = makeAST('-', $1, $3);
                                                                                 }
 | multiplicative_expression                                                     {$$ = $1;}
 ;
 
 multiplicative_expression: multiplicative_expression MULT primary_expression      {
                                                                                     printf("Multiplication\n");
-                                                                                    struct Expression expr;
-                                                                                    $$ = makeExpression('*', $1, $3);
+                                                                                    struct AST expr;
+                                                                                    $$ = makeAST('*', $1, $3);
                                                                                   }
 | multiplicative_expression DIV primary_expression                                {
                                                                                     printf("Division\n");
-                                                                                    $$ = makeExpression('/', $1, $3);
+                                                                                    $$ = makeAST('/', $1, $3);
                                                                                   }
 | primary_expression                                                              {$$ = $1;}
 ;
@@ -200,24 +190,24 @@ int * getValue(char symbol)
   return result;
 }
 
-void freeExpression(struct Expression * expr)
+void freeAST(struct AST * expr)
 {
   if (expr->left != NULL)
   {
-    freeExpression(expr->left);
+    freeAST(expr->left);
   }
 
   if (expr->right != NULL)
   {
-    freeExpression(expr->right);
+    freeAST(expr->right);
   }
 
   free(expr);
 }
 
-struct Expression * makePrimary(char type, int left)
+struct AST * makePrimary(char type, int left)
 {
-  struct Expression * expr = malloc(sizeof(struct Expression));
+  struct AST * expr = malloc(sizeof(struct AST));
   expr->type = type;
   expr->value = left;
   expr->left = NULL;
@@ -226,9 +216,9 @@ struct Expression * makePrimary(char type, int left)
   return expr;
 }
 
-struct Expression * makeExpression(char type, struct Expression * left, struct Expression * right)
+struct AST * makeAST(char type, struct AST * left, struct AST * right)
 {
-  struct Expression * expr = malloc(sizeof(struct Expression));
+  struct AST * expr = malloc(sizeof(struct AST));
   expr->type = type;
   expr->left = left;
   expr->right = right;
@@ -236,7 +226,7 @@ struct Expression * makeExpression(char type, struct Expression * left, struct E
   return expr;
 }
 
-int evalExpression(struct Expression * expr)
+int evalAST(struct AST * expr)
 {
   switch (expr->type)
   {
@@ -244,17 +234,17 @@ int evalExpression(struct Expression * expr)
     break;
     case 'v': return getValue(expr->value)[1];
     break;
-    case '>': return evalExpression(expr->left) > evalExpression(expr->right);
+    case '>': return evalAST(expr->left) > evalAST(expr->right);
     break;
-    case '<': return evalExpression(expr->left) > evalExpression(expr->right);
+    case '<': return evalAST(expr->left) > evalAST(expr->right);
     break;
-    case '+': return evalExpression(expr->left) + evalExpression(expr->right);
+    case '+': return evalAST(expr->left) + evalAST(expr->right);
     break;
-    case '-': return evalExpression(expr->left) - evalExpression(expr->right);
+    case '-': return evalAST(expr->left) - evalAST(expr->right);
     break;
-    case '*': return evalExpression(expr->left) * evalExpression(expr->right);
+    case '*': return evalAST(expr->left) * evalAST(expr->right);
     break;
-    case '/': return evalExpression(expr->left) / evalExpression(expr->right);
+    case '/': return evalAST(expr->left) / evalAST(expr->right);
   }
 }
 
