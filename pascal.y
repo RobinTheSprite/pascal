@@ -245,6 +245,7 @@ int eval(struct AST * expr)
     case '*': return eval(expr->left) * eval(expr->right);
     break;
     case '/': return eval(expr->left) / eval(expr->right);
+    break;
   }
 }
 
