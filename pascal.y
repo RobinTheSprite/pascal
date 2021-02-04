@@ -302,7 +302,7 @@ int eval(struct AST * expr)
       //Expressions
       case '>': result = eval(expr->left) > eval(expr->right);
       break;
-      case '<': result = eval(expr->left) > eval(expr->right);
+      case '<': result = eval(expr->left) < eval(expr->right);
       break;
       case '+': result = eval(expr->left) + eval(expr->right);
       break;
