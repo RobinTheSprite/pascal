@@ -23,9 +23,10 @@
     extern struct Symbol symbols[symbolLength];
     int * getValue(char symbol);
     void assign(char, int value);
-    void evalStatement();
+
     void freeAST(struct AST * expr);
     struct AST * makePrimary(char type, int left);
+    struct AST * makeSingleWithValue(char type, int value, struct AST * ast);
     struct AST * makeAST(char type, struct AST * left, struct AST * right);
     int eval(struct AST * expr);
 %}
@@ -77,22 +78,29 @@ statement_list: statement
 
 statement:                                                                      {printf("Empty statement\n");}
 | variable ASSIGN expression                                                    {
-                                                                                  int result = eval($3);
+                                                                                  struct AST * stmt = makeSingleWithValue('=', $1[0], $3);
+                                                                                  int result = eval(stmt);
                                                                                   printf("Assignment statement %c=%d\n", $1[0], result);
-                                                                                  assign($1[0], result);
-                                                                                  freeAST($3);
+
+                                                                                  freeAST(stmt);
                                                                                 }
 | BEGIN_BLOCK statement_list END_BLOCK                                          {printf("Code block\n");}
 | control_flow
 | procid LEFT_PAREN expression RIGHT_PAREN                                      {
                                                                                   printf("Function with parameters=%s\n", $1);
+
+                                                                                  struct AST * stmt = makeAST('w', $3, NULL);
                                                                                   // I guess negative characters are a thing
                                                                                   if (strcmp("writeln", $1) == -'(')
                                                                                   {
-                                                                                    printf("%d\n", eval($3));
+                                                                                    eval(stmt);
+                                                                                  }
+                                                                                  else
+                                                                                  {
+                                                                                    yyerror("Function not recognized");
                                                                                   }
 
-                                                                                  freeAST($3);
+                                                                                  freeAST(stmt);
                                                                                 }
 ;
 
@@ -216,6 +224,14 @@ struct AST * makePrimary(char type, int left)
   return expr;
 }
 
+struct AST * makeSingleWithValue(char type, int value, struct AST * ast)
+{
+  struct AST * stmt = makeAST(type, ast, NULL);
+  stmt->value = value;
+
+  return stmt;
+}
+
 struct AST * makeAST(char type, struct AST * left, struct AST * right)
 {
   struct AST * expr = malloc(sizeof(struct AST));
@@ -228,25 +244,42 @@ struct AST * makeAST(char type, struct AST * left, struct AST * right)
 
 int eval(struct AST * expr)
 {
+  int result = 0;
   switch (expr->type)
   {
-    case 'i': return expr->value;
+    //Primary value-holders
+    case 'i': result = expr->value;
     break;
-    case 'v': return getValue(expr->value)[1];
+    case 'v': result = getValue(expr->value)[1];
     break;
-    case '>': return eval(expr->left) > eval(expr->right);
+
+    //Expressions
+    case '>': result = eval(expr->left) > eval(expr->right);
     break;
-    case '<': return eval(expr->left) > eval(expr->right);
+    case '<': result = eval(expr->left) > eval(expr->right);
     break;
-    case '+': return eval(expr->left) + eval(expr->right);
+    case '+': result = eval(expr->left) + eval(expr->right);
     break;
-    case '-': return eval(expr->left) - eval(expr->right);
+    case '-': result = eval(expr->left) - eval(expr->right);
     break;
-    case '*': return eval(expr->left) * eval(expr->right);
+    case '*': result = eval(expr->left) * eval(expr->right);
     break;
-    case '/': return eval(expr->left) / eval(expr->right);
+    case '/': result = eval(expr->left) / eval(expr->right);
+    break;
+
+    //Statements
+    case '=':
+      result = eval(expr->left);
+      assign(expr->value, result);
+    break;
+    case 'w':
+      printf("%d\n", eval(expr->left));
     break;
   }
+    break;
+  }
+
+  return result;
 }
 
 int main()
