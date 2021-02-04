@@ -117,10 +117,12 @@ statement:                                                                      
 control_flow: IF expression THEN statement                                      {
                                                                                   printf("If statement\n");
                                                                                   $$ = makeSingleWithValue('i', eval($2), $4);
+                                                                                  freeAST($2);
                                                                                 }
 | IF expression THEN statement ELSE statement                                   {
                                                                                   printf("If-else statement\n");
                                                                                   $$ = makeASTWithValue('i', eval($2), $4, $6);
+                                                                                  freeAST($2);
                                                                                 }
 | WHILE expression DO statement                                                 {
                                                                                   printf("While statement\n");
