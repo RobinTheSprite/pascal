@@ -290,7 +290,7 @@ int eval(struct AST * expr)
 
   if (expr != NULL)
   {
-    /* printf("Current: %c, Value: %d, Left: %d, Right: %d\n", expr->type, expr->value, (int)expr->left, (int)expr->right); */
+    /* printf("Current: %c, Value: %d\n", expr->type, expr->value); */
     switch (expr->type)
     {
       //Primary value-holders
