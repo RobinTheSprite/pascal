@@ -1,16 +1,12 @@
 program Hello;
-var I, J : integer;
+var I : integer;
 begin
   I := 1;
-
-  if I > 0 then
+  while I < 10 do
   begin
-    I := 4;
-    if I > 3 then
-      J := 4;
-  end
-  else
-    I := 6;
-
-  writeln(I);
+    writeln(I);
+    I := I + 1;
+    if I > 5 then
+      writeln(5);
+  end;
 end.
