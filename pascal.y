@@ -28,6 +28,8 @@
     struct AST * makePrimary(char type, int left);
     struct AST * makeSingleWithValue(char type, int value, struct AST * ast);
     struct AST * makeAST(char type, struct AST * left, struct AST * right);
+    struct AST * makeASTWithValue(char type, int value, struct AST * left, struct AST * right);
+    struct AST * appendAST(struct AST * list, struct AST * stmt);
     int eval(struct AST * expr);
 %}
 
@@ -37,7 +39,7 @@
 {
     int ival;
     char * sval;
-    struct AST * exprval;
+    struct AST * astval;
 }
 
 %token <sval> IDENTIFIER
@@ -50,18 +52,27 @@
 
 %right THEN ELSE
 
-%type <exprval> primary_expression multiplicative_expression additive_expression expression
+%type <astval> primary_expression multiplicative_expression additive_expression expression
+%type <astval> control_flow statement statement_list block1 block
 %type <sval> variable procid
 
 %%
-pascal_program: PROGRAM IDENTIFIER SEMICOLON block PERIOD       {printf("Parse Successful\n");}
+pascal_program: PROGRAM IDENTIFIER SEMICOLON block PERIOD                       {
+                                                                                  printf("Parse Successful\n");
+                                                                                  printf("Begin execution:\n");
+                                                                                  eval($4);
+                                                                                  freeAST($4);
+                                                                                }
 ;
 
-block: block1
-| variable_declaration SEMICOLON block1
+block: block1                                                                   {$$ = $1;}
+| variable_declaration SEMICOLON block1                                         {$$ = $3;}
 ;
 
-block1: BEGIN_BLOCK statement_list END_BLOCK                                    {printf("Main block\n");}
+block1: BEGIN_BLOCK statement_list END_BLOCK                                    {
+                                                                                  printf("Main block\n");
+                                                                                  $$ = $2;
+                                                                                }
 ;
 
 variable_declaration: VAR variableid_list COLON INTEGER
@@ -72,41 +83,49 @@ variableid_list: IDENTIFIER                                                     
 | variableid_list COMMA IDENTIFIER                                              {printf("Variable declaration=%s\n", $3);}
 ;
 
-statement_list: statement
-| statement_list SEMICOLON statement
+statement_list: statement                                                       {$$ = makeAST('l', $1, NULL);}
+| statement_list SEMICOLON statement                                            {
+                                                                                  appendAST($1, makeAST('l', $3, NULL));
+                                                                                }
 ;
 
-statement:                                                                      {printf("Empty statement\n");}
-| variable ASSIGN expression                                                    {
-                                                                                  struct AST * stmt = makeSingleWithValue('=', $1[0], $3);
-                                                                                  int result = eval(stmt);
-                                                                                  printf("Assignment statement %c=%d\n", $1[0], result);
-
-                                                                                  freeAST(stmt);
+statement:                                                                      {
+                                                                                  printf("Empty statement\n");
+                                                                                  $$ = makeAST('e', NULL, NULL);
                                                                                 }
-| BEGIN_BLOCK statement_list END_BLOCK                                          {printf("Code block\n");}
-| control_flow
+| variable ASSIGN expression                                                    {
+                                                                                  printf("Assignment statement\n");
+                                                                                  $$ = makeSingleWithValue('=', $1[0], $3);
+                                                                                }
+| BEGIN_BLOCK statement_list END_BLOCK                                          {printf("Code block\n"); $$ = $2;}
+| control_flow                                                                  {$$ = $1;}
 | procid LEFT_PAREN expression RIGHT_PAREN                                      {
                                                                                   printf("Function with parameters=%s\n", $1);
 
-                                                                                  struct AST * stmt = makeAST('w', $3, NULL);
                                                                                   // I guess negative characters are a thing
                                                                                   if (strcmp("writeln", $1) == -'(')
                                                                                   {
-                                                                                    eval(stmt);
+                                                                                    $$ = makeAST('p', $3, NULL);
                                                                                   }
                                                                                   else
                                                                                   {
                                                                                     yyerror("Function not recognized");
                                                                                   }
-
-                                                                                  freeAST(stmt);
                                                                                 }
 ;
 
-control_flow: IF expression THEN statement                                      {printf("If statement=%d\n", eval($2)); freeAST($2);}
-| IF expression THEN statement ELSE statement                                   {printf("If-else statement=%d\n", eval($2)); freeAST($2);}
-| WHILE expression DO statement                                                 {printf("While statement=%d\n", eval($2)); freeAST($2);}
+control_flow: IF expression THEN statement                                      {
+                                                                                  printf("If statement\n");
+                                                                                  $$ = makeSingleWithValue('i', eval($2), $4);
+                                                                                }
+| IF expression THEN statement ELSE statement                                   {
+                                                                                  printf("If-else statement\n");
+                                                                                  $$ = makeASTWithValue('i', eval($2), $4, $6);
+                                                                                }
+| WHILE expression DO statement                                                 {
+                                                                                  printf("While statement\n");
+                                                                                  $$ = makeAST('w', $2, $4);
+                                                                                }
 ;
 
 variable: IDENTIFIER                                                            {printf("Variable=%c\n", $1[0]); $$ = $1;}
@@ -161,11 +180,11 @@ primary_expression: variable                                                    
                                                                                 }
 | NUM                                                                           {
                                                                                   printf("Integer=%d\n", $1);
-                                                                                  $$ = makePrimary('i', $1);
+                                                                                  $$ = makePrimary('n', $1);
                                                                                 }
 ;
 
-procid: IDENTIFIER
+procid: IDENTIFIER                                                              {$$ = $1;}
 ;
 %%
 
@@ -226,8 +245,7 @@ struct AST * makePrimary(char type, int left)
 
 struct AST * makeSingleWithValue(char type, int value, struct AST * ast)
 {
-  struct AST * stmt = makeAST(type, ast, NULL);
-  stmt->value = value;
+  struct AST * stmt = makeASTWithValue(type, value, ast, NULL);
 
   return stmt;
 }
@@ -242,41 +260,87 @@ struct AST * makeAST(char type, struct AST * left, struct AST * right)
   return expr;
 }
 
+struct AST * makeASTWithValue(char type, int value, struct AST * left, struct AST * right)
+{
+  struct AST * expr = malloc(sizeof(struct AST));
+  expr->type = type;
+  expr->value = value;
+  expr->left = left;
+  expr->right = right;
+
+  return expr;
+}
+
+struct AST * appendAST(struct AST * list, struct AST * stmt)
+{
+  struct AST * tail = list;
+  while(tail->right != NULL)
+  {
+    tail = tail->right;
+  }
+
+  tail->right = stmt;
+}
+
 int eval(struct AST * expr)
 {
   int result = 0;
-  switch (expr->type)
+
+  if (expr != NULL)
   {
-    //Primary value-holders
-    case 'i': result = expr->value;
-    break;
-    case 'v': result = getValue(expr->value)[1];
-    break;
+    /* printf("Current: %c, Value: %d, Left: %d, Right: %d\n", expr->type, expr->value, (int)expr->left, (int)expr->right); */
+    switch (expr->type)
+    {
+      //Primary value-holders
+      case 'n': result = expr->value;
+      break;
+      case 'v': result = getValue(expr->value)[1];
+      break;
 
-    //Expressions
-    case '>': result = eval(expr->left) > eval(expr->right);
-    break;
-    case '<': result = eval(expr->left) > eval(expr->right);
-    break;
-    case '+': result = eval(expr->left) + eval(expr->right);
-    break;
-    case '-': result = eval(expr->left) - eval(expr->right);
-    break;
-    case '*': result = eval(expr->left) * eval(expr->right);
-    break;
-    case '/': result = eval(expr->left) / eval(expr->right);
-    break;
+      //Expressions
+      case '>': result = eval(expr->left) > eval(expr->right);
+      break;
+      case '<': result = eval(expr->left) > eval(expr->right);
+      break;
+      case '+': result = eval(expr->left) + eval(expr->right);
+      break;
+      case '-': result = eval(expr->left) - eval(expr->right);
+      break;
+      case '*': result = eval(expr->left) * eval(expr->right);
+      break;
+      case '/': result = eval(expr->left) / eval(expr->right);
+      break;
 
-    //Statements
-    case '=':
-      result = eval(expr->left);
-      assign(expr->value, result);
-    break;
-    case 'w':
-      printf("%d\n", eval(expr->left));
-    break;
-  }
-    break;
+      //Statements
+      case '=':
+        result = eval(expr->left);
+        assign(expr->value, result);
+      break;
+      case 'p':
+        printf("%d\n", eval(expr->left));
+      break;
+      case 'i':
+        if (eval(expr->left))
+        {
+          result = 1;
+          eval(expr->left);
+        }
+        else
+        {
+          eval(expr->right);
+        }
+      break;
+      case 'w':
+        while(eval(expr->left))
+        {
+          eval(expr->right);
+        }
+      break;
+      case 'l':
+        eval(expr->left);
+        eval(expr->right);
+      break;
+    }
   }
 
   return result;
