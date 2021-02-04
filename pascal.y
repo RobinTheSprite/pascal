@@ -322,7 +322,7 @@ int eval(struct AST * expr)
         printf("%d\n", eval(expr->left));
       break;
       case 'i':
-        if (eval(expr->left))
+        if (expr->value)
         {
           result = 1;
           eval(expr->left);
