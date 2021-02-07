@@ -32,13 +32,13 @@
     int * getValue(char symbol);
     void assign(char symbol, int value);
 
-    void freeAST(struct AST * expr);
+    void freeAST(struct AST * ast);
     struct AST * makePrimary(int type, int left);
     struct AST * makeSingleWithValue(int type, int value, struct AST * ast);
     struct AST * makeAST(int type, struct AST * left, struct AST * right);
     struct AST * makeASTWithValue(int type, int value, struct AST * left, struct AST * right);
     struct AST * appendAST(struct AST * list, struct AST * stmt);
-    int eval(struct AST * expr);
+    int eval(struct AST * ast);
 %}
 
 %define api.prefix {pascal}
@@ -165,7 +165,6 @@ additive_expression: additive_expression PLUS multiplicative_expression         
 
 multiplicative_expression: multiplicative_expression MULT primary_expression      {
                                                                                     printf("Multiplication\n");
-                                                                                    struct AST expr;
                                                                                     $$ = makeAST(MULT, $1, $3);
                                                                                   }
 | multiplicative_expression DIV primary_expression                                {
@@ -225,30 +224,30 @@ int * getValue(char symbol)
   return result;
 }
 
-void freeAST(struct AST * expr)
+void freeAST(struct AST * ast)
 {
-  if (expr->left != NULL)
+  if (ast->left != NULL)
   {
-    freeAST(expr->left);
+    freeAST(ast->left);
   }
 
-  if (expr->right != NULL)
+  if (ast->right != NULL)
   {
-    freeAST(expr->right);
+    freeAST(ast->right);
   }
 
-  free(expr);
+  free(ast);
 }
 
 struct AST * makePrimary(int type, int left)
 {
-  struct AST * expr = malloc(sizeof(struct AST));
-  expr->type = type;
-  expr->value = left;
-  expr->left = NULL;
-  expr->right = NULL;
+  struct AST * ast = malloc(sizeof(struct AST));
+  ast->type = type;
+  ast->value = left;
+  ast->left = NULL;
+  ast->right = NULL;
 
-  return expr;
+  return ast;
 }
 
 struct AST * makeSingleWithValue(int type, int value, struct AST * ast)
@@ -260,23 +259,23 @@ struct AST * makeSingleWithValue(int type, int value, struct AST * ast)
 
 struct AST * makeAST(int type, struct AST * left, struct AST * right)
 {
-  struct AST * expr = malloc(sizeof(struct AST));
-  expr->type = type;
-  expr->left = left;
-  expr->right = right;
+  struct AST * ast = malloc(sizeof(struct AST));
+  ast->type = type;
+  ast->left = left;
+  ast->right = right;
 
-  return expr;
+  return ast;
 }
 
 struct AST * makeASTWithValue(int type, int value, struct AST * left, struct AST * right)
 {
-  struct AST * expr = malloc(sizeof(struct AST));
-  expr->type = type;
-  expr->value = value;
-  expr->left = left;
-  expr->right = right;
+  struct AST * ast = malloc(sizeof(struct AST));
+  ast->type = type;
+  ast->value = value;
+  ast->left = left;
+  ast->right = right;
 
-  return expr;
+  return ast;
 }
 
 struct AST * appendAST(struct AST * list, struct AST * stmt)
@@ -290,67 +289,67 @@ struct AST * appendAST(struct AST * list, struct AST * stmt)
   tail->right = stmt;
 }
 
-int eval(struct AST * expr)
+int eval(struct AST * ast)
 {
   int result = 0;
 
-  if (expr != NULL)
+  if (ast != NULL)
   {
-    /* printf("Current: %c, Value: %d Left: %c, Right: %c\n", expr->type, expr->value, left, right); */
-    switch (expr->type)
+    /* printf("Current: %c, Value: %d Left: %c, Right: %c\n", ast->type, ast->value, left, right); */
+    switch (ast->type)
     {
       //Primary value-holders
-      case NUM: result = expr->value;
+      case NUM: result = ast->value;
       break;
-      case VAR: result = getValue(expr->value)[1];
+      case VAR: result = getValue(ast->value)[1];
       break;
 
       //Expressions
-      case GREATER_THAN: result = eval(expr->left) > eval(expr->right);
+      case GREATER_THAN: result = eval(ast->left) > eval(ast->right);
       break;
-      case LESS_THAN: result = eval(expr->left) < eval(expr->right);
+      case LESS_THAN: result = eval(ast->left) < eval(ast->right);
       break;
-      case PLUS: result = eval(expr->left) + eval(expr->right);
+      case PLUS: result = eval(ast->left) + eval(ast->right);
       break;
-      case MINUS: result = eval(expr->left) - eval(expr->right);
+      case MINUS: result = eval(ast->left) - eval(ast->right);
       break;
-      case MULT: result = eval(expr->left) * eval(expr->right);
+      case MULT: result = eval(ast->left) * eval(ast->right);
       break;
-      case DIV: result = eval(expr->left) / eval(expr->right);
+      case DIV: result = eval(ast->left) / eval(ast->right);
       break;
 
       //Statements
       case ASSIGN:
-        result = eval(expr->left);
-        assign(expr->value, result);
+        result = eval(ast->left);
+        assign(ast->value, result);
       break;
       case PROCEDURE:
-        printf("%d\n", eval(expr->left));
+        printf("%d\n", eval(ast->left));
       break;
       case CONDITION:
-        result = eval(expr->left);
-        expr->right->value = result;
-        eval(expr->right);
+        result = eval(ast->left);
+        ast->right->value = result;
+        eval(ast->right);
       break;
       case IF_ELSE:
-        if (expr->value)
+        if (ast->value)
         {
-          eval(expr->left);
+          eval(ast->left);
         }
         else
         {
-          eval(expr->right);
+          eval(ast->right);
         }
       break;
       case WHILE:
-        while(eval(expr->left))
+        while(eval(ast->left))
         {
-          eval(expr->right);
+          eval(ast->right);
         }
       break;
       case LIST:
-        eval(expr->left);
-        eval(expr->right);
+        eval(ast->left);
+        eval(ast->right);
       break;
     }
   }
