@@ -92,15 +92,15 @@ variableid_list: IDENTIFIER                                                     
 | variableid_list COMMA IDENTIFIER                                              {printf("Variable declaration=%s\n", $3);}
 ;
 
-statement_list: statement                                                       {$$ = makeAST(LIST, $1, NULL);}
+statement_list: statement                                                       {$$ = makeAST(LIST, $1, nullptr);}
 | statement_list SEMICOLON statement                                            {
-                                                                                  appendAST($1, makeAST(LIST, $3, NULL));
+                                                                                  appendAST($1, makeAST(LIST, $3, nullptr));
                                                                                 }
 ;
 
 statement:                                                                      {
                                                                                   printf("Empty statement\n");
-                                                                                  $$ = makeAST(EMPTY, NULL, NULL);
+                                                                                  $$ = makeAST(EMPTY, nullptr, nullptr);
                                                                                 }
 | variable ASSIGN expression                                                    {
                                                                                   printf("Assignment statement\n");
@@ -114,7 +114,7 @@ statement:                                                                      
                                                                                   // I guess negative characters are a thing
                                                                                   if (strcmp("writeln", $1) == -'(')
                                                                                   {
-                                                                                    $$ = makeAST(PROCEDURE, $3, NULL);
+                                                                                    $$ = makeAST(PROCEDURE, $3, nullptr);
                                                                                   }
                                                                                   else
                                                                                   {
@@ -125,7 +125,7 @@ statement:                                                                      
 
 control_flow: IF expression THEN statement                                      {
                                                                                   printf("If statement\n");
-                                                                                  $$ = makeAST(CONDITION, $2, makeAST(IF_ELSE, $4, NULL));
+                                                                                  $$ = makeAST(CONDITION, $2, makeAST(IF_ELSE, $4, nullptr));
                                                                                 }
 | IF expression THEN statement ELSE statement                                   {
                                                                                   printf("If-else statement\n");
@@ -227,12 +227,12 @@ int * getValue(char symbol)
 
 void freeAST(AST * ast)
 {
-  if (ast->left != NULL)
+  if (ast->left != nullptr)
   {
     freeAST(ast->left);
   }
 
-  if (ast->right != NULL)
+  if (ast->right != nullptr)
   {
     freeAST(ast->right);
   }
@@ -245,15 +245,15 @@ AST * makePrimary(int type, int left)
   AST * ast = (AST *)malloc(sizeof(AST));
   ast->type = type;
   ast->value = left;
-  ast->left = NULL;
-  ast->right = NULL;
+  ast->left = nullptr;
+  ast->right = nullptr;
 
   return ast;
 }
 
 AST * makeSingleWithValue(int type, int value, AST * ast)
 {
-  AST * stmt = makeASTWithValue(type, value, ast, NULL);
+  AST * stmt = makeASTWithValue(type, value, ast, nullptr);
 
   return stmt;
 }
@@ -282,7 +282,7 @@ AST * makeASTWithValue(int type, int value, AST * left, AST * right)
 void appendAST(AST * list, AST * stmt)
 {
   AST * tail = list;
-  while(tail->right != NULL)
+  while(tail->right != nullptr)
   {
     tail = tail->right;
   }
@@ -294,7 +294,7 @@ int eval(AST * ast)
 {
   int result = 0;
 
-  if (ast != NULL)
+  if (ast != nullptr)
   {
     /* printf("Current: %c, Value: %d Left: %c, Right: %c\n", ast->type, ast->value, left, right); */
     switch (ast->type)
