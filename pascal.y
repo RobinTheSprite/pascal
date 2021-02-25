@@ -37,7 +37,7 @@
     struct AST * makeSingleWithValue(int type, int value, struct AST * ast);
     struct AST * makeAST(int type, struct AST * left, struct AST * right);
     struct AST * makeASTWithValue(int type, int value, struct AST * left, struct AST * right);
-    struct AST * appendAST(struct AST * list, struct AST * stmt);
+    void appendAST(struct AST * list, struct AST * stmt);
     int eval(struct AST * ast);
 %}
 
@@ -241,7 +241,7 @@ void freeAST(struct AST * ast)
 
 struct AST * makePrimary(int type, int left)
 {
-  struct AST * ast = malloc(sizeof(struct AST));
+  struct AST * ast = (AST *)malloc(sizeof(struct AST));
   ast->type = type;
   ast->value = left;
   ast->left = NULL;
@@ -259,7 +259,7 @@ struct AST * makeSingleWithValue(int type, int value, struct AST * ast)
 
 struct AST * makeAST(int type, struct AST * left, struct AST * right)
 {
-  struct AST * ast = malloc(sizeof(struct AST));
+  struct AST * ast = (AST *)malloc(sizeof(struct AST));
   ast->type = type;
   ast->left = left;
   ast->right = right;
@@ -269,7 +269,7 @@ struct AST * makeAST(int type, struct AST * left, struct AST * right)
 
 struct AST * makeASTWithValue(int type, int value, struct AST * left, struct AST * right)
 {
-  struct AST * ast = malloc(sizeof(struct AST));
+  struct AST * ast = (AST *)malloc(sizeof(struct AST));
   ast->type = type;
   ast->value = value;
   ast->left = left;
@@ -278,7 +278,7 @@ struct AST * makeASTWithValue(int type, int value, struct AST * left, struct AST
   return ast;
 }
 
-struct AST * appendAST(struct AST * list, struct AST * stmt)
+void appendAST(struct AST * list, struct AST * stmt)
 {
   struct AST * tail = list;
   while(tail->right != NULL)

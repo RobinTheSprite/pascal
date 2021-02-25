@@ -2,7 +2,7 @@
 %option prefix="pascal"
 
 %{
-    #include "pascal.tab.h"
+    #include "pascal.tab.hpp"
 
     struct Symbol
     {
