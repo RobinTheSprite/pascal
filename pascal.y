@@ -1,6 +1,8 @@
 %{
-		#include <stdio.h>
-    #include <string.h>
+    #include <iostream>
+    #include <string>
+    #include "string.h"
+    #include <vector>
 
     extern int yylex();
     int yyerror(const char *s);
@@ -13,10 +15,10 @@
 
     struct AST
     {
-      int type;
-      int value;
-      struct AST * left;
-      struct AST * right;
+        int type;
+        int value;
+        AST * left;
+        AST * right;
     };
     enum AST_Type
     {
@@ -27,18 +29,17 @@
       PROCEDURE
     };
 
-    #define symbolLength 100
-    extern struct Symbol symbols[symbolLength];
+    extern std::vector<Symbol> symbols;
     int * getValue(char symbol);
     void assign(char symbol, int value);
 
-    void freeAST(struct AST * ast);
-    struct AST * makePrimary(int type, int left);
-    struct AST * makeSingleWithValue(int type, int value, struct AST * ast);
-    struct AST * makeAST(int type, struct AST * left, struct AST * right);
-    struct AST * makeASTWithValue(int type, int value, struct AST * left, struct AST * right);
-    void appendAST(struct AST * list, struct AST * stmt);
-    int eval(struct AST * ast);
+    void freeAST(AST * ast);
+    AST * makePrimary(int type, int left);
+    AST * makeSingleWithValue(int type, int value, AST * ast);
+    AST * makeAST(int type, AST * left, AST * right);
+    AST * makeASTWithValue(int type, int value, AST * left, AST * right);
+    void appendAST(AST * list, AST * stmt);
+    int eval(AST * ast);
 %}
 
 %define api.prefix {pascal}
@@ -197,7 +198,7 @@ procid: IDENTIFIER                                                              
 
 void assign(char symbol, int value)
 {
-  for (int i = 0; i < symbolLength; ++i)
+  for (size_t i = 0; i < symbols.size(); ++i)
   {
     if (symbols[i].name == symbol)
     {
@@ -209,7 +210,7 @@ void assign(char symbol, int value)
 int * getValue(char symbol)
 {
   static int result[2];
-  for (int i = 0; i < symbolLength; ++i)
+  for (size_t i = 0; i < symbols.size(); ++i)
   {
     if (symbols[i].name == symbol)
     {
@@ -224,7 +225,7 @@ int * getValue(char symbol)
   return result;
 }
 
-void freeAST(struct AST * ast)
+void freeAST(AST * ast)
 {
   if (ast->left != NULL)
   {
@@ -239,9 +240,9 @@ void freeAST(struct AST * ast)
   free(ast);
 }
 
-struct AST * makePrimary(int type, int left)
+AST * makePrimary(int type, int left)
 {
-  struct AST * ast = (AST *)malloc(sizeof(struct AST));
+  AST * ast = (AST *)malloc(sizeof(AST));
   ast->type = type;
   ast->value = left;
   ast->left = NULL;
@@ -250,16 +251,16 @@ struct AST * makePrimary(int type, int left)
   return ast;
 }
 
-struct AST * makeSingleWithValue(int type, int value, struct AST * ast)
+AST * makeSingleWithValue(int type, int value, AST * ast)
 {
-  struct AST * stmt = makeASTWithValue(type, value, ast, NULL);
+  AST * stmt = makeASTWithValue(type, value, ast, NULL);
 
   return stmt;
 }
 
-struct AST * makeAST(int type, struct AST * left, struct AST * right)
+AST * makeAST(int type, AST * left, AST * right)
 {
-  struct AST * ast = (AST *)malloc(sizeof(struct AST));
+  AST * ast = (AST *)malloc(sizeof(AST));
   ast->type = type;
   ast->left = left;
   ast->right = right;
@@ -267,9 +268,9 @@ struct AST * makeAST(int type, struct AST * left, struct AST * right)
   return ast;
 }
 
-struct AST * makeASTWithValue(int type, int value, struct AST * left, struct AST * right)
+AST * makeASTWithValue(int type, int value, AST * left, AST * right)
 {
-  struct AST * ast = (AST *)malloc(sizeof(struct AST));
+  AST * ast = (AST *)malloc(sizeof(AST));
   ast->type = type;
   ast->value = value;
   ast->left = left;
@@ -278,9 +279,9 @@ struct AST * makeASTWithValue(int type, int value, struct AST * left, struct AST
   return ast;
 }
 
-void appendAST(struct AST * list, struct AST * stmt)
+void appendAST(AST * list, AST * stmt)
 {
-  struct AST * tail = list;
+  AST * tail = list;
   while(tail->right != NULL)
   {
     tail = tail->right;
@@ -289,7 +290,7 @@ void appendAST(struct AST * list, struct AST * stmt)
   tail->right = stmt;
 }
 
-int eval(struct AST * ast)
+int eval(AST * ast)
 {
   int result = 0;
 
@@ -359,7 +360,7 @@ int eval(struct AST * ast)
 
 int main()
 {
-	yyparse();
+	pascalparse();
 	return 0;
 }
 

@@ -2,6 +2,10 @@
 %option prefix="pascal"
 
 %{
+    #include <iostream>
+    #include <string>
+    #include <vector>
+
     #include "pascal.tab.hpp"
 
     struct Symbol
@@ -10,12 +14,11 @@
       int value;
     };
 
-    #define symbolLength 100
     int symbolEnd = 0;
 
-    struct Symbol symbols[symbolLength];
+    std::vector<Symbol> symbols;
 
-    void findSymbol(char * symbol);
+    void findSymbol(std::string symbol);
 
 %}
 
@@ -46,17 +49,17 @@ do                                    {return DO;}
 ">"                                   {return GREATER_THAN;}
 "<"                                   {return LESS_THAN;}
 [ \t\n]                               {}
-.                                     {printf("Uknown character %s\n", yytext);}
+.                                     {std::cout << "Uknown character " << yytext << std::endl;}
 %%
 
-void findSymbol(char * symbol)
+void findSymbol(std::string symbol)
 {
-  if (symbol[1] != 0)
+  if (symbol.size() > 1)
   {
     return;
   }
 
-  for (int i = 0; i < symbolEnd && i < symbolLength; ++i)
+  for (size_t i = 0; i < symbols.size(); ++i)
   {
     if (symbols[i].name == symbol[0])
     {
@@ -64,7 +67,6 @@ void findSymbol(char * symbol)
     }
   }
 
-  symbols[symbolEnd].name = symbol[0];
-  ++symbolEnd;
+  symbols.push_back({symbol[0], 0});
   return;
 }
