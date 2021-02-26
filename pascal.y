@@ -9,14 +9,14 @@
 
     struct Symbol
     {
-      char name;
-      int value;
+      char name = 0;
+      int value = 0;
     };
 
     struct AST
     {
-        int type;
-        int value;
+        int type = 0;
+        int value = 0;
         AST * left;
         AST * right;
     };
