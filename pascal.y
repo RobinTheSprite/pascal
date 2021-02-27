@@ -1,6 +1,7 @@
 %{
     #include <iostream>
     #include <iomanip>
+    #include <fstream>
     #include <string>
     #include "string.h"
     #include <vector>
@@ -89,9 +90,16 @@ pascal_program: PROGRAM IDENTIFIER SEMICOLON block PERIOD                       
                                                                                   printf("Begin compilation:\n");
                                                                                   compile($4);
                                                                                   freeAST($4);
+
                                                                                   for (auto instruction : program)
                                                                                   {
                                                                                     std::cout << std::hex << instruction << std::endl;
+                                                                                  }
+
+                                                                                  std::ofstream writer("pascal.lwis");
+                                                                                  for (auto instruction : program)
+                                                                                  {
+                                                                                    writer << instruction << std::endl;
                                                                                   }
                                                                                 }
 ;
@@ -539,6 +547,7 @@ Operand compile(AST * ast)
       //Statements
       case ASSIGN:
         left = compile(ast->left);
+
         if (left.type == IMMEDIATE)
         {
           addToInstruction(instruction, left.value, 0);
@@ -554,6 +563,7 @@ Operand compile(AST * ast)
           addToInstruction(instruction, 0x7, 8);
           addToInstruction(instruction, 0x5, 8);
         }
+
         program.push_back(instruction);
       break;
       case PROCEDURE:
