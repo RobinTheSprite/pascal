@@ -1,7 +1,8 @@
 program Hello;
-var I, J : integer;
+var I, J, K : integer;
 begin
   I := 4;
   J := I + 3;
-  writeln(J);
+  K := 5 + 5 + J;
+  writeln(K);
 end.
