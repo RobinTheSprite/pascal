@@ -1,5 +1,6 @@
 %{
     #include <iostream>
+    #include <iomanip>
     #include <string>
     #include "string.h"
     #include <vector>
@@ -40,6 +41,23 @@
     AST * makeASTWithValue(int type, int value, AST * left, AST * right);
     void appendAST(AST * list, AST * stmt);
     int eval(AST * ast);
+
+    enum ValueType
+    {
+      REGISTER,
+      IMMEDIATE
+    };
+    struct Operand
+    {
+      int value = 0;
+      ValueType type = REGISTER;
+    };
+    int registerNumber(char symbol);
+    int getTemporary();
+    void addToInstruction(long & instruction, int value, int sizeOfValue);
+    Operand createExpressionInstruction(AST * ast, int immediateOpcode, int immediateLayout, int registerOpcode, int registerLayout);
+    Operand compile(AST * ast);
+    std::vector<long> program;
 %}
 
 %define api.prefix {pascal}
@@ -68,9 +86,13 @@
 %%
 pascal_program: PROGRAM IDENTIFIER SEMICOLON block PERIOD                       {
                                                                                   printf("Parse Successful\n");
-                                                                                  printf("Begin execution:\n");
-                                                                                  eval($4);
+                                                                                  printf("Begin compilation:\n");
+                                                                                  compile($4);
                                                                                   freeAST($4);
+                                                                                  for (auto instruction : program)
+                                                                                  {
+                                                                                    std::cout << std::hex << instruction << std::endl;
+                                                                                  }
                                                                                 }
 ;
 
@@ -356,6 +378,217 @@ int eval(AST * ast)
   }
 
   return result;
+}
+
+int registerNumber(char symbol)
+{
+  for (size_t i = 0; i < symbols.size(); ++i)
+  {
+    if (symbols[i].name == symbol)
+    {
+      return i + 2;
+    }
+  }
+
+  return 0;
+}
+
+int getTemporary()
+{
+  if (symbols.size() < 254)
+  {
+    symbols.push_back(Symbol());
+  }
+
+  return symbols.size() + 2;
+}
+
+void addToInstruction(long & instruction, int value, int sizeOfValue)
+{
+  instruction = instruction << sizeOfValue;
+  instruction = instruction | value;
+}
+
+Operand createExpressionInstruction(AST * ast, int immediateOpcode, int immediateLayout, int registerOpcode, int registerLayout)
+{
+  Operand operand;
+  Operand left;
+  Operand right;
+  long instruction = 0;
+
+  operand.type = REGISTER;
+  operand.value = getTemporary();
+  left = compile(ast->left);
+  right = compile(ast->right);
+  if (left.type == IMMEDIATE)
+  {
+    // Build an instruction that stores the left operand in a temp register
+    addToInstruction(instruction, left.value, 0);
+    left.value = getTemporary();
+    addToInstruction(instruction, left.value, 8);
+    addToInstruction(instruction, 0, 8);
+    addToInstruction(instruction, 0x3, 8);
+    program.push_back(instruction);
+  }
+
+  // Build instruction
+  addToInstruction(instruction, right.value, 0);
+  addToInstruction(instruction, left.value, 8);
+  addToInstruction(instruction, operand.value, 8);
+
+  if (right.type == IMMEDIATE)
+  {
+    addToInstruction(instruction, immediateOpcode, 8);
+    addToInstruction(instruction, immediateLayout, 8);
+  }
+  else
+  {
+    addToInstruction(instruction, registerOpcode, 8);
+    addToInstruction(instruction, registerLayout, 8);
+  }
+
+  program.push_back(instruction);
+
+  if (left.type == IMMEDIATE)
+  {
+    symbols.erase(symbols.begin() + left.value);
+  }
+
+  return operand;
+}
+
+Operand compile(AST * ast)
+{
+  Operand operand;
+  Operand left;
+  Operand right;
+  long instruction = 0;
+
+  if (ast != nullptr)
+  {
+    /* printf("Current: %c, Value: %d Left: %c, Right: %c\n", ast->type, ast->value, left, right); */
+    switch (ast->type)
+    {
+      //Primary value-holders
+      case NUM:
+        operand.type = IMMEDIATE;
+        operand.value = ast->value;
+      break;
+      case VAR:
+        operand.type = REGISTER;
+        operand.value = registerNumber(ast->value);
+      break;
+
+      //Expressions
+      case GREATER_THAN: operand = createExpressionInstruction(ast, 0xC, 0x4, 0x1, 0x2);
+      break;
+      case LESS_THAN: operand = createExpressionInstruction(ast, 0xC, 0x4, 0x0, 0x2);
+      break;
+      case PLUS: operand = createExpressionInstruction(ast, 0x2, 0x4, 0x2, 0x5);
+      break;
+      case MINUS: operand = createExpressionInstruction(ast, 0x3, 0x4, 0x3, 0x5);
+      break;
+      case MULT: operand = createExpressionInstruction(ast, 0x4, 0x4, 0x0, 0x5);
+      break;
+      case DIV:
+        operand.type = REGISTER;
+        operand.value = getTemporary();
+        left = compile(ast->left);
+        right = compile(ast->right);
+        if (left.type == IMMEDIATE)
+        {
+          // Build an instruction that stores the left operand in a temp register
+          addToInstruction(instruction, left.value, 0);
+          left.value = getTemporary();
+          addToInstruction(instruction, left.value, 8);
+          addToInstruction(instruction, 0, 8);
+          addToInstruction(instruction, 0x3, 8);
+          program.push_back(instruction);
+        }
+
+        // Build instruction
+        addToInstruction(instruction, right.value, 0);
+        addToInstruction(instruction, left.value, 8);
+
+        if (left.type == IMMEDIATE)
+        {
+          symbols.erase(symbols.begin() + left.value);
+        }
+
+        left.value = getTemporary();
+        addToInstruction(instruction, left.value, 8);
+        symbols.erase(symbols.begin() + left.value);
+        addToInstruction(instruction, operand.value, 8);
+
+        if (right.type == IMMEDIATE)
+        {
+          addToInstruction(instruction, 0x5, 8);
+          addToInstruction(instruction, 0x4, 8);
+        }
+        else
+        {
+          addToInstruction(instruction, 0, 8);
+          addToInstruction(instruction, 0x5, 8);
+        }
+
+        program.push_back(instruction);
+      break;
+
+      //Statements
+      case ASSIGN:
+        left = compile(ast->left);
+        if (left.type == IMMEDIATE)
+        {
+          addToInstruction(instruction, left.value, 0);
+          addToInstruction(instruction, registerNumber(ast->value), 8);
+          addToInstruction(instruction, 0, 8);
+          addToInstruction(instruction, 0x3, 8);
+        }
+        else if (left.type == REGISTER)
+        {
+          addToInstruction(instruction, registerNumber(ast->value), 0);
+          addToInstruction(instruction, 0, 16);
+          addToInstruction(instruction, left.value, 8);
+          addToInstruction(instruction, 0x7, 8);
+          addToInstruction(instruction, 0x5, 8);
+        }
+        program.push_back(instruction);
+      break;
+      case PROCEDURE:
+        left = compile(ast->left);
+        addToInstruction(instruction, left.value, 0);
+        addToInstruction(instruction, 0, 8);
+        addToInstruction(instruction, 0x1, 8);
+        program.push_back(instruction);
+      break;
+      case CONDITION:
+        /* instruction = eval(ast->left);
+        eval(ast->right); */
+      break;
+      case IF_ELSE:
+        /* if (ast->value)
+        {
+          eval(ast->left);
+        }
+        else
+        {
+          eval(ast->right);
+        } */
+      break;
+      case WHILE:
+        /* while(eval(ast->left))
+        {
+          eval(ast->right);
+        } */
+      break;
+      case LIST:
+        compile(ast->left);
+        compile(ast->right);
+      break;
+    }
+  }
+
+  return operand;
 }
 
 int main()

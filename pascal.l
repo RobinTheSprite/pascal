@@ -16,6 +16,7 @@
 
     int symbolEnd = 0;
 
+    #define NUM_OF_REGISTERS 254
     std::vector<Symbol> symbols;
 
     void findSymbol(std::string symbol);
@@ -67,6 +68,10 @@ void findSymbol(std::string symbol)
     }
   }
 
-  symbols.push_back({symbol[0], 0});
+  if (symbols.size() < NUM_OF_REGISTERS)
+  {
+    symbols.push_back({symbol[0], 0});
+  }
+
   return;
 }
