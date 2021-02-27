@@ -514,6 +514,7 @@ Operand compile(AST * ast)
           addToInstruction(instruction, 0, 8);
           addToInstruction(instruction, 0x3, 8);
           program.push_back(instruction);
+          instruction = 0;
         }
 
         // Build instruction
