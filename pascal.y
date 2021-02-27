@@ -429,6 +429,7 @@ Operand createExpressionInstruction(AST * ast, int immediateOpcode, int immediat
     addToInstruction(instruction, 0, 8);
     addToInstruction(instruction, 0x3, 8);
     program.push_back(instruction);
+    instruction = 0;
   }
 
   // Build instruction
