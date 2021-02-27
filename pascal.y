@@ -451,7 +451,8 @@ Operand createExpressionInstruction(AST * ast, int immediateOpcode, int immediat
 
   if (left.type == IMMEDIATE)
   {
-    symbols.erase(symbols.begin() + left.value);
+    /* std::cout << "Symbol table size: " << symbols.size() << " Value: " << left.value << std::endl;
+    symbols.erase(symbols.begin() + left.value); */
   }
 
   return operand;
@@ -512,12 +513,12 @@ Operand compile(AST * ast)
 
         if (left.type == IMMEDIATE)
         {
-          symbols.erase(symbols.begin() + left.value);
+          /* symbols.erase(symbols.begin() + left.value); */
         }
 
         left.value = getTemporary();
         addToInstruction(instruction, left.value, 8);
-        symbols.erase(symbols.begin() + left.value);
+        /* symbols.erase(symbols.begin() + left.value); */
         addToInstruction(instruction, operand.value, 8);
 
         if (right.type == IMMEDIATE)
