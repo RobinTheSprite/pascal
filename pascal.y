@@ -492,7 +492,7 @@ Operand compile(AST * ast)
       //Expressions
       case GREATER_THAN: operand = createExpressionInstruction(ast, 0xC, 0x4, 0x1, 0x2);
       break;
-      case LESS_THAN: operand = createExpressionInstruction(ast, 0xC, 0x4, 0x0, 0x2);
+      case LESS_THAN: operand = createExpressionInstruction(ast, 0xB, 0x4, 0x0, 0x2);
       break;
       case PLUS: operand = createExpressionInstruction(ast, 0x2, 0x4, 0x2, 0x5);
       break;
