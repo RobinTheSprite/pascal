@@ -473,6 +473,8 @@ Operand compile(AST * ast)
   Operand left;
   Operand right;
   long instruction = 0;
+  int startTarget = 0;
+  int endTarget = 0;
 
   if (ast != nullptr)
   {
@@ -575,18 +577,27 @@ Operand compile(AST * ast)
         program.push_back(instruction);
       break;
       case CONDITION:
-        /* instruction = eval(ast->left);
-        eval(ast->right); */
+        left = compile(ast->left);
+        ast->right->value = left.value;
+        compile(ast->right);
       break;
       case IF_ELSE:
-        /* if (ast->value)
-        {
-          eval(ast->left);
-        }
-        else
-        {
-          eval(ast->right);
-        } */
+        addToInstruction(instruction, 0x1, 0);
+        addToInstruction(instruction, 0x1, 8);
+        addToInstruction(instruction, ast->value, 8);
+        addToInstruction(instruction, 0xE, 8);
+        addToInstruction(instruction, 0x4, 8);
+        program.push_back(instruction);
+        startTarget = program.size();
+        instruction = 0;
+        left = compile(ast->left);
+        endTarget = program.size();
+        addToInstruction(instruction, endTarget, 0);
+        addToInstruction(instruction, 0, 8);
+        addToInstruction(instruction, 0x1, 8);
+        addToInstruction(instruction, 0x3, 8);
+        program.insert(program.begin() + startTarget, instruction);
+        instruction = 0;
       break;
       case WHILE:
         /* while(eval(ast->left))
