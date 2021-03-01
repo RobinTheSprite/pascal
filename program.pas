@@ -1,8 +1,16 @@
 program Hello;
-var I, J, K : integer;
+var n, p, t, i : integer;
 begin
-  I := 4;
-  J := I + 3;
-  K := 5 + 5 + J;
-  writeln(K);
+  n := 10;
+  p := 3;
+  t := 1;
+  if t > 0 then
+  begin
+    i := p;
+    while i < n do
+    begin
+      i := i + p;
+      writeln(i);
+    end;
+  end;
 end.
