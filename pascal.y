@@ -600,10 +600,29 @@ Operand compile(AST * ast)
         instruction = 0;
       break;
       case WHILE:
-        /* while(eval(ast->left))
-        {
-          eval(ast->right);
-        } */
+        startTarget = program.size();
+        left = compile(ast->left);
+        addToInstruction(instruction, 0x1, 0);
+        addToInstruction(instruction, 0x1, 8);
+        addToInstruction(instruction, left.value, 8);
+        addToInstruction(instruction, 0xE, 8);
+        addToInstruction(instruction, 0x4, 8);
+        program.push_back(instruction);
+        instruction = 0;
+        right = compile(ast->right);
+        addToInstruction(instruction, startTarget, 0);
+        addToInstruction(instruction, 0, 8);
+        addToInstruction(instruction, 0x1, 8);
+        addToInstruction(instruction, 0x3, 8);
+        program.push_back(instruction);
+        instruction = 0;
+        endTarget = program.size() + 1;
+        addToInstruction(instruction, endTarget, 0);
+        addToInstruction(instruction, 0, 8);
+        addToInstruction(instruction, 0x1, 8);
+        addToInstruction(instruction, 0x3, 8);
+        program.insert(program.begin() + startTarget + 2, instruction);
+        instruction = 0;
       break;
       case LIST:
         compile(ast->left);
