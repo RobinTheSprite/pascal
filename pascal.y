@@ -423,18 +423,22 @@ void addToInstruction(long & instruction, int value, int sizeOfValue)
 // Create an instruction that does a addition, subtraction, multiplication, or comparison
 Operand createExpressionInstruction(AST * ast, int immediateOpcode, int immediateLayout, int registerOpcode, int registerLayout)
 {
-  Operand operand;
-  Operand left;
-  Operand right;
-  long instruction = 0;
+  Operand operand;      // The result of the expression
+  Operand left;         // The result of the left operand of the expression
+  Operand right;        // The result of the right operand of the expression
+  long instruction = 0; // The instruction executing the expression
 
+  // Set the result register
   operand.type = REGISTER;
   operand.value = getTemporary();
+
+  // Compile the sub-expressions
   left = compile(ast->left);
   right = compile(ast->right);
+
+  // If the left operand is an immediate, store it in a temporary register
   if (left.type == IMMEDIATE)
   {
-    // Build an instruction that stores the left operand in a temp register
     addToInstruction(instruction, left.value, 0);
     left.value = getTemporary();
     addToInstruction(instruction, left.value, 8);
@@ -444,11 +448,12 @@ Operand createExpressionInstruction(AST * ast, int immediateOpcode, int immediat
     instruction = 0;
   }
 
-  // Build instruction
+  // operand = right OP left
   addToInstruction(instruction, right.value, 0);
   addToInstruction(instruction, left.value, 8);
   addToInstruction(instruction, operand.value, 8);
 
+  // Use the correct kind of instruction depending on type
   if (right.type == IMMEDIATE)
   {
     addToInstruction(instruction, immediateOpcode, 8);
@@ -461,12 +466,6 @@ Operand createExpressionInstruction(AST * ast, int immediateOpcode, int immediat
   }
 
   program.push_back(instruction);
-
-  if (left.type == IMMEDIATE)
-  {
-    /* std::cout << "Symbol table size: " << symbols.size() << " Value: " << left.value << std::endl;
-    symbols.erase(symbols.begin() + left.value); */
-  }
 
   return operand;
 }
@@ -530,14 +529,8 @@ Operand compile(AST * ast)
         addToInstruction(instruction, right.value, 0);
         addToInstruction(instruction, left.value, 8);
 
-        if (left.type == IMMEDIATE)
-        {
-          /* symbols.erase(symbols.begin() + left.value); */
-        }
-
         left.value = getTemporary();
         addToInstruction(instruction, left.value, 8);
-        /* symbols.erase(symbols.begin() + left.value); */
         addToInstruction(instruction, operand.value, 8);
 
         if (right.type == IMMEDIATE)
