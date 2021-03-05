@@ -6,11 +6,14 @@ begin
   t := 1;
   if t > 0 then
   begin
-    i := p;
+    i := p + p;
     while i < n do
     begin
+      if i > 6 then
+      begin
+        writeln(i);
+      end;
       i := i + p;
-      writeln(i);
     end;
   end;
 end.
