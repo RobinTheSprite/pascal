@@ -31,6 +31,7 @@
       PROCEDURE
     };
 
+    #define NUM_OF_REGISTERS 254
     extern std::vector<Symbol> symbols;
     int * getValue(char symbol);
     void assign(char symbol, int value);
@@ -405,7 +406,7 @@ int registerNumber(char symbol)
 // Reserve a temporary register
 int getTemporary()
 {
-  if (symbols.size() < 254)
+  if (symbols.size() < NUM_OF_REGISTERS)
   {
     symbols.push_back(Symbol());
   }
