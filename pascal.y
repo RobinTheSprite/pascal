@@ -1,3 +1,28 @@
+// pascal.y
+// Mark Underwood
+// March 2021
+
+/*
+  Creates a compiler that can compile a small subset of the Pascal
+  language to LWIS (Large Width Instruction Set), an instruction set encoding
+  of my own design.
+
+  The compilation process is done in a single pass. The only language feature
+  it does not compile from the Pascal subset is an if-else statement. No
+  lifetime management is done when assigning temporary variables, so programs
+  compiled with this version should consume fewer than 254.
+
+  Many programming sins were committed to bring this compiler into being. Global
+  variables, function side effects, and the use of malloc and free were all
+  necessary to produce working code. Future iterations may improve.
+
+  The only problem with the program at the time of presentation was a
+  miscalculation of jump targets. The problem has since been corrected by
+  inserting a placehoder value for instructions that need to be built after
+  certain jump targets are calculated. The placeholder is replaced with the
+  instruction once it is complete.
+*/
+
 %{
     #include <iostream>
     #include <iomanip>
