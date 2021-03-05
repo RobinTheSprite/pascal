@@ -473,8 +473,9 @@ Operand compile(AST * ast)
   Operand left;
   Operand right;
   long instruction = 0;
-  int startTarget = 0;
-  int endTarget = 0;
+  size_t startTarget = 0;
+  size_t endTarget = 0;
+  size_t skipTarget = 0;
 
   if (ast != nullptr)
   {
@@ -582,26 +583,39 @@ Operand compile(AST * ast)
         compile(ast->right);
       break;
       case IF_ELSE:
+        // Skip next instruction if condition is true
         addToInstruction(instruction, 0x1, 0);
         addToInstruction(instruction, 0x1, 8);
         addToInstruction(instruction, ast->value, 8);
         addToInstruction(instruction, 0xE, 8);
         addToInstruction(instruction, 0x4, 8);
         program.push_back(instruction);
-        startTarget = program.size();
         instruction = 0;
+
+        // Placehoder for the jump past the if statement
+        program.push_back(0);
+        skipTarget = program.size() - 1;
+
+        // Compile the if statement's body
         left = compile(ast->left);
-        endTarget = program.size();
+
+        //Create and insert the jump past the if statement
+        endTarget = program.size() - 1;
         addToInstruction(instruction, endTarget, 0);
         addToInstruction(instruction, 0, 8);
         addToInstruction(instruction, 0x1, 8);
         addToInstruction(instruction, 0x3, 8);
-        program.insert(program.begin() + startTarget, instruction);
+        program[skipTarget] = instruction;
         instruction = 0;
       break;
       case WHILE:
-        startTarget = program.size();
+        // Mark the top of the loop
+        startTarget = program.size() - 1;
+
+        // Compile the comparison
         left = compile(ast->left);
+
+        // Skip the next line if condition is true
         addToInstruction(instruction, 0x1, 0);
         addToInstruction(instruction, 0x1, 8);
         addToInstruction(instruction, left.value, 8);
@@ -609,19 +623,29 @@ Operand compile(AST * ast)
         addToInstruction(instruction, 0x4, 8);
         program.push_back(instruction);
         instruction = 0;
+
+        // Mark where to insert the jump past the while loop
+        program.push_back(0);
+        skipTarget = program.size() - 1;
+
+        // Compile the loop body
         right = compile(ast->right);
+
+        // Jump back to the beginning at the botton of the loop body
         addToInstruction(instruction, startTarget, 0);
         addToInstruction(instruction, 0, 8);
         addToInstruction(instruction, 0x1, 8);
         addToInstruction(instruction, 0x3, 8);
         program.push_back(instruction);
         instruction = 0;
-        endTarget = program.size() + 1;
+
+        // Create and insert the jump over the while loop
+        endTarget = program.size() - 1;
         addToInstruction(instruction, endTarget, 0);
         addToInstruction(instruction, 0, 8);
         addToInstruction(instruction, 0x1, 8);
         addToInstruction(instruction, 0x3, 8);
-        program.insert(program.begin() + startTarget + 2, instruction);
+        program[skipTarget] = instruction;
         instruction = 0;
       break;
       case LIST:
