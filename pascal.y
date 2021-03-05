@@ -227,6 +227,7 @@ procid: IDENTIFIER                                                              
 ;
 %%
 
+// Assign a value to the given symbol
 void assign(char symbol, int value)
 {
   for (size_t i = 0; i < symbols.size(); ++i)
@@ -238,6 +239,7 @@ void assign(char symbol, int value)
   }
 }
 
+// Find the value associated with the given symbol
 int * getValue(char symbol)
 {
   static int result[2];
@@ -256,6 +258,7 @@ int * getValue(char symbol)
   return result;
 }
 
+// Free the nodes of the AST
 void freeAST(AST * ast)
 {
   if (ast->left != nullptr)
@@ -271,6 +274,7 @@ void freeAST(AST * ast)
   free(ast);
 }
 
+// Make an AST representing a primary expression
 AST * makePrimary(int type, int left)
 {
   AST * ast = (AST *)malloc(sizeof(AST));
@@ -282,6 +286,7 @@ AST * makePrimary(int type, int left)
   return ast;
 }
 
+// Make an AST with the given subtree, type, and value, having no right subtree
 AST * makeSingleWithValue(int type, int value, AST * ast)
 {
   AST * stmt = makeASTWithValue(type, value, ast, nullptr);
@@ -289,6 +294,7 @@ AST * makeSingleWithValue(int type, int value, AST * ast)
   return stmt;
 }
 
+// Make an AST with the given type and subtrees
 AST * makeAST(int type, AST * left, AST * right)
 {
   AST * ast = (AST *)malloc(sizeof(AST));
@@ -299,6 +305,7 @@ AST * makeAST(int type, AST * left, AST * right)
   return ast;
 }
 
+// Make an AST with the given type, value, and subtrees
 AST * makeASTWithValue(int type, int value, AST * left, AST * right)
 {
   AST * ast = (AST *)malloc(sizeof(AST));
@@ -310,6 +317,7 @@ AST * makeASTWithValue(int type, int value, AST * left, AST * right)
   return ast;
 }
 
+// Add a statement AST to a statement list AST
 void appendAST(AST * list, AST * stmt)
 {
   AST * tail = list;
@@ -321,9 +329,10 @@ void appendAST(AST * list, AST * stmt)
   tail->right = stmt;
 }
 
+// Recursively walk the AST, immediately executing each node
 int eval(AST * ast)
 {
-  int result = 0;
+  int result = 0; // The result of an expression
 
   if (ast != nullptr)
   {
