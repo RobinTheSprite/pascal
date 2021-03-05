@@ -6,15 +6,18 @@
     #include "string.h"
     #include <vector>
 
+    // Flex/Bison related declarations
     extern int yylex();
     int yyerror(const char *s);
 
+    // Represents a variable
     struct Symbol
     {
       char name = 0;
       int value = 0;
     };
 
+    // A node of an Abstract Syntax Tree (AST)
     struct AST
     {
         int type = 0;
@@ -22,6 +25,8 @@
         AST * left;
         AST * right;
     };
+
+    // Types of AST that are not covered by token types
     enum AST_Type
     {
       EMPTY,
@@ -31,11 +36,13 @@
       PROCEDURE
     };
 
+    // Symbol table declarations
     #define NUM_OF_REGISTERS 254
     extern std::vector<Symbol> symbols;
     int * getValue(char symbol);
     void assign(char symbol, int value);
 
+    // AST related declarations
     void freeAST(AST * ast);
     AST * makePrimary(int type, int left);
     AST * makeSingleWithValue(int type, int value, AST * ast);
@@ -44,11 +51,16 @@
     void appendAST(AST * list, AST * stmt);
     int eval(AST * ast);
 
+    // Compilation related declarations
+
+    // What type an Operand can be
     enum ValueType
     {
       REGISTER,
       IMMEDIATE
     };
+
+    // An operand to a statement or expression
     struct Operand
     {
       int value = 0;
@@ -59,11 +71,14 @@
     void addToInstruction(long & instruction, int value, int sizeOfValue);
     Operand createExpressionInstruction(AST * ast, int immediateOpcode, int immediateLayout, int registerOpcode, int registerLayout);
     Operand compile(AST * ast);
+
+    // Stores the instructions that are compiled
     std::vector<long> program;
 %}
 
 %define api.prefix {pascal}
 
+// The types used in the parser
 %union
 {
     int ival;
@@ -71,6 +86,7 @@
     struct AST * astval;
 }
 
+// Tokens, organized by responsibility
 %token <sval> IDENTIFIER
 %token <ival> NUM
 %token VAR INTEGER
@@ -79,8 +95,10 @@
 %token ASSIGN GREATER_THAN LESS_THAN PLUS MINUS MULT DIV
 %token IF THEN ELSE WHILE DO
 
+// Solve the if-else shift-reduce problem
 %right THEN ELSE
 
+// Assign types to non-terminals that are returned as ASTs
 %type <astval> primary_expression multiplicative_expression additive_expression expression
 %type <astval> control_flow statement statement_list block1 block
 %type <sval> variable procid
