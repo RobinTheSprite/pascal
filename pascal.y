@@ -329,13 +329,13 @@ int eval(AST * ast)
     /* printf("Current: %c, Value: %d Left: %c, Right: %c\n", ast->type, ast->value, left, right); */
     switch (ast->type)
     {
-      //Primary value-holders
+      // Primary value-holders
       case NUM: result = ast->value;
       break;
       case VAR: result = getValue(ast->value)[1];
       break;
 
-      //Expressions
+      // Expressions
       case GREATER_THAN: result = eval(ast->left) > eval(ast->right);
       break;
       case LESS_THAN: result = eval(ast->left) < eval(ast->right);
@@ -349,7 +349,7 @@ int eval(AST * ast)
       case DIV: result = eval(ast->left) / eval(ast->right);
       break;
 
-      //Statements
+      // Statements
       case ASSIGN:
         result = eval(ast->left);
         assign(ast->value, result);
@@ -388,6 +388,7 @@ int eval(AST * ast)
   return result;
 }
 
+// Get the register associated with the given symbol
 int registerNumber(char symbol)
 {
   for (size_t i = 0; i < symbols.size(); ++i)
@@ -401,6 +402,7 @@ int registerNumber(char symbol)
   return 0;
 }
 
+// Reserve a temporary register
 int getTemporary()
 {
   if (symbols.size() < 254)
@@ -411,12 +413,14 @@ int getTemporary()
   return symbols.size() + 2;
 }
 
+// Insert a value that is sizeOfValue long into the instruction
 void addToInstruction(long & instruction, int value, int sizeOfValue)
 {
   instruction = instruction << sizeOfValue;
   instruction = instruction | value;
 }
 
+// Create an instruction that does a addition, subtraction, multiplication, or comparison
 Operand createExpressionInstruction(AST * ast, int immediateOpcode, int immediateLayout, int registerOpcode, int registerLayout)
 {
   Operand operand;
@@ -467,22 +471,23 @@ Operand createExpressionInstruction(AST * ast, int immediateOpcode, int immediat
   return operand;
 }
 
+// Recursively walk the AST, creating and emitting instructions along the way
 Operand compile(AST * ast)
 {
-  Operand operand;
-  Operand left;
-  Operand right;
-  long instruction = 0;
-  size_t startTarget = 0;
-  size_t endTarget = 0;
-  size_t skipTarget = 0;
+  Operand operand;        // The result of this node's instruction
+  Operand left;           // The result of the left subtree's compilation
+  Operand right;          // The result of the right subtree's compilation
+  long instruction = 0;   // The instruction to be built by this function
+  size_t startTarget = 0; // The address of the beginning of a loop
+  size_t endTarget = 0;   // The address of the end of a loop
+  size_t skipTarget = 0;  // The address of a jump to skip a block of code
 
   if (ast != nullptr)
   {
     /* printf("Current: %c, Value: %d Left: %c, Right: %c\n", ast->type, ast->value, left, right); */
     switch (ast->type)
     {
-      //Primary value-holders
+      // Primary value-holders
       case NUM:
         operand.type = IMMEDIATE;
         operand.value = ast->value;
@@ -492,7 +497,7 @@ Operand compile(AST * ast)
         operand.value = registerNumber(ast->value);
       break;
 
-      //Expressions
+      // Expressions
       case GREATER_THAN: operand = createExpressionInstruction(ast, 0xC, 0x4, 0x1, 0x2);
       break;
       case LESS_THAN: operand = createExpressionInstruction(ast, 0xB, 0x4, 0x0, 0x2);
@@ -508,9 +513,10 @@ Operand compile(AST * ast)
         operand.value = getTemporary();
         left = compile(ast->left);
         right = compile(ast->right);
+
+        // If the left operand is an immediate, store it in a temporary register
         if (left.type == IMMEDIATE)
         {
-          // Build an instruction that stores the left operand in a temp register
           addToInstruction(instruction, left.value, 0);
           left.value = getTemporary();
           addToInstruction(instruction, left.value, 8);
@@ -548,10 +554,12 @@ Operand compile(AST * ast)
         program.push_back(instruction);
       break;
 
-      //Statements
+      // Statements
       case ASSIGN:
+        // Compile the expression to assign
         left = compile(ast->left);
 
+        // Build an instruction either for immediate or register assignment
         if (left.type == IMMEDIATE)
         {
           addToInstruction(instruction, left.value, 0);
@@ -571,14 +579,20 @@ Operand compile(AST * ast)
         program.push_back(instruction);
       break;
       case PROCEDURE:
+        // Get the register to print from
         left = compile(ast->left);
+
+        // Build a print instruction
         addToInstruction(instruction, left.value, 0);
         addToInstruction(instruction, 0, 8);
         addToInstruction(instruction, 0x1, 8);
         program.push_back(instruction);
       break;
       case CONDITION:
+        // Compile the condition
         left = compile(ast->left);
+
+        // Store the result register in the right subtree and compile it
         ast->right->value = left.value;
         compile(ast->right);
       break;
@@ -599,7 +613,7 @@ Operand compile(AST * ast)
         // Compile the if statement's body
         left = compile(ast->left);
 
-        //Create and insert the jump past the if statement
+        // Create and insert the jump past the if statement
         endTarget = program.size() - 1;
         addToInstruction(instruction, endTarget, 0);
         addToInstruction(instruction, 0, 8);
@@ -649,6 +663,7 @@ Operand compile(AST * ast)
         instruction = 0;
       break;
       case LIST:
+        // Compile the statement in left, and the list contained in right
         compile(ast->left);
         compile(ast->right);
       break;
